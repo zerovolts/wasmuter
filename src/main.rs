@@ -7,6 +7,13 @@ fn main() -> io::Result<()> {
     emitter.push_section(Section::MemorySection(MemorySection(vec![Memory {
         limits: Limits { min: 1, max: None },
     }])));
+    emitter.push_section(Section::ExportSection(ExportSection(vec![Export {
+        name: "mem".to_owned(),
+        desc: ExportDesc {
+            export_type: ExportType::Memory,
+            index: 0,
+        },
+    }])));
 
     let mut file = File::create("output.wasm")?;
     file.write_all(emitter.as_slice())?;
@@ -18,11 +25,13 @@ enum Opcode {
     MagicNumber,
     Version,
     MemorySection,
+    ExportSection,
 }
 
 const MAGIC_NUMBER: u32 = 0x6d736100; // \0asm
 const VERSION: u32 = 0x00000001;
 const MEMORY_SECTION: u8 = 0x05;
+const EXPORT_SECTION: u8 = 0x07;
 
 struct Emitter {
     bytes: Vec<u8>,
@@ -40,6 +49,7 @@ impl Emitter {
     pub fn push_section(&mut self, section: Section) {
         let _byte_count = match section {
             Section::MemorySection(memory) => memory.emit(self),
+            Section::ExportSection(export) => export.emit(self),
         };
     }
 
@@ -59,6 +69,7 @@ impl Emitter {
             Opcode::MagicNumber => self.push_u32(MAGIC_NUMBER),
             Opcode::Version => self.push_u32(VERSION),
             Opcode::MemorySection => self.push_u8(MEMORY_SECTION),
+            Opcode::ExportSection => self.push_u8(EXPORT_SECTION),
         }
     }
 
@@ -86,6 +97,7 @@ trait Emit {
 
 enum Section {
     MemorySection(MemorySection),
+    ExportSection(ExportSection),
 }
 
 struct MemorySection(Vec<Memory>);
@@ -125,5 +137,43 @@ impl Emit for Limits {
             emitter.push_u8(self.min);
             2
         }
+    }
+}
+
+struct ExportSection(Vec<Export>);
+struct Export {
+    name: String,
+    desc: ExportDesc,
+}
+struct ExportDesc {
+    export_type: ExportType,
+    index: u8,
+}
+
+#[derive(Copy, Clone)]
+enum ExportType {
+    Function = 0x00,
+    Table = 0x01,
+    Memory = 0x02,
+    Global = 0x03,
+}
+
+impl Emit for ExportSection {
+    fn emit(&self, emitter: &mut Emitter) -> u8 {
+        emitter.push_opcode(Opcode::ExportSection);
+        emitter.push_u8(0); // byte_count placeholder
+
+        emitter.push_u8(self.0.len() as u8);
+        let mut byte_count = 1;
+        for export in self.0.iter() {
+            let name = export.name.as_str();
+            emitter.push_u8(name.len() as u8);
+            emitter.push_str(name);
+            emitter.push_u8(export.desc.export_type as u8);
+            emitter.push_u8(export.desc.index);
+            byte_count += name.len() as u8 + 3;
+        }
+        emitter.write_length(byte_count);
+        byte_count + 2
     }
 }
