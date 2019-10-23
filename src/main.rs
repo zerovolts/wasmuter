@@ -6,8 +6,8 @@ enum Opcode {
     Version,
 }
 
-const MAGIC_NUMBER: [u8; 4] = [0x00, 0x61, 0x73, 0x6d];
-const VERSION: [u8; 4] = [0x01, 0x00, 0x00, 0x00];
+const MAGIC_NUMBER: u32 = 0x6d736100; // \0asm
+const VERSION: u32 = 0x00000001;
 
 struct Emitter {
     bytes: Vec<u8>,
@@ -33,8 +33,8 @@ impl Emitter {
         self.bytes.push(byte);
     }
 
-    fn push_u32(&mut self, value: [u8; 4]) {
-        for byte in value.iter() {
+    fn push_u32(&mut self, value: u32) {
+        for byte in value.to_le_bytes().iter() {
             self.bytes.push(*byte);
         }
     }
