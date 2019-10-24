@@ -41,7 +41,12 @@ mod tests {
             limits: Limits { min: 1, max: None },
         }]);
         let byte_count = memory_section.encode(&mut encoder);
-        let expected_bytes = [0x05, 0x03, 0x01, 0x00, 0x01];
+        let expected_bytes = [
+            0x05, // section id
+            0x03, // byte count
+            0x01, // memory count
+            0x00, 0x01, // limits
+        ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
         assert_eq!(byte_count, expected_bytes.len() as u8);

@@ -50,7 +50,13 @@ mod tests {
             limits: Limits { min: 1, max: None },
         }]);
         let byte_count = table_section.encode(&mut encoder);
-        let expected_bytes = [0x04, 0x04, 0x01, 0x70, 0x00, 0x01];
+        let expected_bytes = [
+            0x04, // section id
+            0x04, // byte count
+            0x01, // table count
+            0x70, // element type - funcref
+            0x00, 0x01, // limits
+        ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
         assert_eq!(byte_count, expected_bytes.len() as u8);

@@ -29,7 +29,10 @@ mod tests {
         let mut encoder = WasmEncoder::new();
         let limits = Limits { min: 1, max: None };
         let byte_count = limits.encode(&mut encoder);
-        let expected_bytes = [0x00, 0x01];
+        let expected_bytes = [
+            0x00, // max flag (off)
+            0x01, // min
+        ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
         assert_eq!(byte_count, expected_bytes.len() as u8);
@@ -43,7 +46,11 @@ mod tests {
             max: Some(1),
         };
         let byte_count = limits.encode(&mut encoder);
-        let expected_bytes = [0x01, 0x00, 0x01];
+        let expected_bytes = [
+            0x01, // max flag (on)
+            0x00, // min
+            0x01, // max
+        ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
         assert_eq!(byte_count, expected_bytes.len() as u8);

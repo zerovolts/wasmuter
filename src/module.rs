@@ -28,7 +28,10 @@ mod tests {
         let mut encoder = WasmEncoder::new();
         let module = Module(vec![]);
         let byte_count = module.encode(&mut encoder);
-        let expected_bytes = [0x00, 0x61, 0x73, 0x6D, 0x01, 0x00, 0x00, 0x00];
+        let expected_bytes = [
+            0x00, 0x61, 0x73, 0x6D, // magic number "\0asm"
+            0x01, 0x00, 0x00, 0x00, // version 1
+        ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
         assert_eq!(byte_count, expected_bytes.len() as u8);
