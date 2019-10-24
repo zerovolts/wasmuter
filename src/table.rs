@@ -37,3 +37,22 @@ impl WasmEncode for Table {
         self.limits.encode(encoder) + 1
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_section_encoding() {
+        let mut encoder = WasmEncoder::new();
+        let table_section = TableSection(vec![Table {
+            element_type: ElementType::FunctionReference,
+            limits: Limits { min: 1, max: None },
+        }]);
+        let byte_count = table_section.encode(&mut encoder);
+        let expected_bytes = [0x04, 0x04, 0x01, 0x70, 0x00, 0x01];
+
+        assert_eq!(encoder.as_slice(), expected_bytes);
+        assert_eq!(byte_count, expected_bytes.len() as u8);
+    }
+}

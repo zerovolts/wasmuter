@@ -35,12 +35,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_encoding() {
+    fn test_section_encoding() {
         let mut encoder = WasmEncoder::new();
-        let memory = MemorySection(vec![Memory {
+        let memory_section = MemorySection(vec![Memory {
             limits: Limits { min: 1, max: None },
         }]);
-        let byte_count = memory.encode(&mut encoder);
+        let byte_count = memory_section.encode(&mut encoder);
         let expected_bytes = [0x05, 0x03, 0x01, 0x00, 0x01];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
