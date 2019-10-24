@@ -18,3 +18,19 @@ impl WasmEncode for Module {
         byte_count
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_encoding() {
+        let mut encoder = WasmEncoder::new();
+        let module = Module(vec![]);
+        let byte_count = module.encode(&mut encoder);
+        let expected_bytes = [0x00, 0x61, 0x73, 0x6D, 0x01, 0x00, 0x00, 0x00];
+
+        assert_eq!(encoder.as_slice(), expected_bytes);
+        assert_eq!(byte_count, expected_bytes.len() as u8);
+    }
+}
