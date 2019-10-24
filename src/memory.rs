@@ -29,3 +29,21 @@ impl WasmEncode for Memory {
         self.limits.encode(encoder)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_encoding() {
+        let mut encoder = WasmEncoder::new();
+        let memory = MemorySection(vec![Memory {
+            limits: Limits { min: 1, max: None },
+        }]);
+        let byte_count = memory.encode(&mut encoder);
+        let expected_bytes = [0x05, 0x03, 0x01, 0x00, 0x01];
+
+        assert_eq!(encoder.as_slice(), expected_bytes);
+        assert_eq!(byte_count, expected_bytes.len() as u8);
+    }
+}
