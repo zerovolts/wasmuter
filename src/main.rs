@@ -4,6 +4,10 @@ fn main() -> io::Result<()> {
     let mut encoder = WasmEncoder::new();
     encoder.push_opcode(Opcode::MagicNumber);
     encoder.push_opcode(Opcode::Version);
+    encoder.push_section(Section::TableSection(TableSection(vec![Table {
+        element_type: ElementType::FunctionReference,
+        limits: Limits { min: 1, max: None },
+    }])));
     encoder.push_section(Section::MemorySection(MemorySection(vec![Memory {
         limits: Limits { min: 1, max: None },
     }])));
@@ -24,14 +28,18 @@ fn main() -> io::Result<()> {
 enum Opcode {
     MagicNumber,
     Version,
+    TableSection,
     MemorySection,
     ExportSection,
+    FunctionReferenceType,
 }
 
 const MAGIC_NUMBER: u32 = 0x6d736100; // \0asm
 const VERSION: u32 = 0x00000001;
+const TABLE_SECTION: u8 = 0x04;
 const MEMORY_SECTION: u8 = 0x05;
 const EXPORT_SECTION: u8 = 0x07;
+const FUNCTION_REFERENCE_TYPE: u8 = 0x70;
 
 struct WasmEncoder {
     bytes: Vec<u8>,
@@ -48,6 +56,7 @@ impl WasmEncoder {
 
     pub fn push_section(&mut self, section: Section) {
         let _byte_count = match section {
+            Section::TableSection(table) => table.encode(self),
             Section::MemorySection(memory) => memory.encode(self),
             Section::ExportSection(export) => export.encode(self),
         };
@@ -68,8 +77,10 @@ impl WasmEncoder {
         match opcode {
             Opcode::MagicNumber => self.push_u32(MAGIC_NUMBER),
             Opcode::Version => self.push_u32(VERSION),
+            Opcode::TableSection => self.push_u8(TABLE_SECTION),
             Opcode::MemorySection => self.push_u8(MEMORY_SECTION),
             Opcode::ExportSection => self.push_u8(EXPORT_SECTION),
+            Opcode::FunctionReferenceType => self.push_u8(FUNCTION_REFERENCE_TYPE),
         }
     }
 
@@ -96,8 +107,37 @@ trait WasmEncode {
 }
 
 enum Section {
+    TableSection(TableSection),
     MemorySection(MemorySection),
     ExportSection(ExportSection),
+}
+
+struct TableSection(Vec<Table>);
+// The Wasm spec only supports one element_type currently, so we just push that
+// opcode without checking the field.
+#[allow(dead_code)]
+struct Table {
+    element_type: ElementType,
+    limits: Limits,
+}
+enum ElementType {
+    FunctionReference,
+}
+
+impl WasmEncode for TableSection {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+        encoder.push_opcode(Opcode::TableSection);
+        encoder.push_u8(0); // byte_count placeholder
+
+        encoder.push_u8(self.0.len() as u8);
+        let mut byte_count = 1;
+        for table in self.0.iter() {
+            encoder.push_opcode(Opcode::FunctionReferenceType);
+            byte_count += table.limits.encode(encoder) + 1;
+        }
+        encoder.write_length(byte_count);
+        byte_count + 2
+    }
 }
 
 struct MemorySection(Vec<Memory>);
