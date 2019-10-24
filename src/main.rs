@@ -1,13 +1,13 @@
 use std::{fs::File, io, io::prelude::*};
 
 fn main() -> io::Result<()> {
-    let mut emitter = Emitter::new();
-    emitter.push_opcode(Opcode::MagicNumber);
-    emitter.push_opcode(Opcode::Version);
-    emitter.push_section(Section::MemorySection(MemorySection(vec![Memory {
+    let mut encoder = WasmEncoder::new();
+    encoder.push_opcode(Opcode::MagicNumber);
+    encoder.push_opcode(Opcode::Version);
+    encoder.push_section(Section::MemorySection(MemorySection(vec![Memory {
         limits: Limits { min: 1, max: None },
     }])));
-    emitter.push_section(Section::ExportSection(ExportSection(vec![Export {
+    encoder.push_section(Section::ExportSection(ExportSection(vec![Export {
         name: "mem".to_owned(),
         desc: ExportDesc {
             export_type: ExportType::Memory,
@@ -16,7 +16,7 @@ fn main() -> io::Result<()> {
     }])));
 
     let mut file = File::create("output.wasm")?;
-    file.write_all(emitter.as_slice())?;
+    file.write_all(encoder.as_slice())?;
     Ok(())
 }
 
@@ -33,13 +33,13 @@ const VERSION: u32 = 0x00000001;
 const MEMORY_SECTION: u8 = 0x05;
 const EXPORT_SECTION: u8 = 0x07;
 
-struct Emitter {
+struct WasmEncoder {
     bytes: Vec<u8>,
 }
 
-impl Emitter {
+impl WasmEncoder {
     pub fn new() -> Self {
-        Emitter { bytes: vec![] }
+        WasmEncoder { bytes: vec![] }
     }
 
     pub fn as_slice(&self) -> &[u8] {
@@ -48,8 +48,8 @@ impl Emitter {
 
     pub fn push_section(&mut self, section: Section) {
         let _byte_count = match section {
-            Section::MemorySection(memory) => memory.emit(self),
-            Section::ExportSection(export) => export.emit(self),
+            Section::MemorySection(memory) => memory.encode(self),
+            Section::ExportSection(export) => export.encode(self),
         };
     }
 
@@ -90,9 +90,9 @@ impl Emitter {
     }
 }
 
-trait Emit {
-    /** Returns number of bytes emitted */
-    fn emit(&self, emitter: &mut Emitter) -> u8;
+trait WasmEncode {
+    /** Returns number of bytes encoded */
+    fn encode(&self, encoder: &mut WasmEncoder) -> u8;
 }
 
 enum Section {
@@ -105,17 +105,17 @@ struct Memory {
     limits: Limits,
 }
 
-impl Emit for MemorySection {
-    fn emit(&self, emitter: &mut Emitter) -> u8 {
-        emitter.push_opcode(Opcode::MemorySection);
-        emitter.push_u8(0); // byte_count placeholder
+impl WasmEncode for MemorySection {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+        encoder.push_opcode(Opcode::MemorySection);
+        encoder.push_u8(0); // byte_count placeholder
 
-        emitter.push_u8(self.0.len() as u8);
+        encoder.push_u8(self.0.len() as u8);
         let mut byte_count = 1;
         for memory in self.0.iter() {
-            byte_count += memory.limits.emit(emitter);
+            byte_count += memory.limits.encode(encoder);
         }
-        emitter.write_length(byte_count);
+        encoder.write_length(byte_count);
         byte_count + 2
     }
 }
@@ -125,16 +125,16 @@ struct Limits {
     max: Option<u8>,
 }
 
-impl Emit for Limits {
-    fn emit(&self, emitter: &mut Emitter) -> u8 {
+impl WasmEncode for Limits {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
         if self.max.is_some() {
-            emitter.push_u8(1); // max flag
-            emitter.push_u8(self.min);
-            emitter.push_u8(self.max.unwrap());
+            encoder.push_u8(1); // max flag
+            encoder.push_u8(self.min);
+            encoder.push_u8(self.max.unwrap());
             3
         } else {
-            emitter.push_u8(0); // max flag
-            emitter.push_u8(self.min);
+            encoder.push_u8(0); // max flag
+            encoder.push_u8(self.min);
             2
         }
     }
@@ -158,22 +158,22 @@ enum ExportType {
     Global = 0x03,
 }
 
-impl Emit for ExportSection {
-    fn emit(&self, emitter: &mut Emitter) -> u8 {
-        emitter.push_opcode(Opcode::ExportSection);
-        emitter.push_u8(0); // byte_count placeholder
+impl WasmEncode for ExportSection {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+        encoder.push_opcode(Opcode::ExportSection);
+        encoder.push_u8(0); // byte_count placeholder
 
-        emitter.push_u8(self.0.len() as u8);
+        encoder.push_u8(self.0.len() as u8);
         let mut byte_count = 1;
         for export in self.0.iter() {
             let name = export.name.as_str();
-            emitter.push_u8(name.len() as u8);
-            emitter.push_str(name);
-            emitter.push_u8(export.desc.export_type as u8);
-            emitter.push_u8(export.desc.index);
+            encoder.push_u8(name.len() as u8);
+            encoder.push_str(name);
+            encoder.push_u8(export.desc.export_type as u8);
+            encoder.push_u8(export.desc.index);
             byte_count += name.len() as u8 + 3;
         }
-        emitter.write_length(byte_count);
+        encoder.write_length(byte_count);
         byte_count + 2
     }
 }
