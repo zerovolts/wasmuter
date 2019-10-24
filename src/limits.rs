@@ -19,3 +19,33 @@ impl WasmEncode for Limits {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_encoding_without_max() {
+        let mut encoder = WasmEncoder::new();
+        let limits = Limits { min: 1, max: None };
+        let byte_count = limits.encode(&mut encoder);
+        let expected_bytes = [0x00, 0x01];
+
+        assert_eq!(encoder.as_slice(), expected_bytes);
+        assert_eq!(byte_count, expected_bytes.len() as u8);
+    }
+
+    #[test]
+    fn test_encoding_with_max() {
+        let mut encoder = WasmEncoder::new();
+        let limits = Limits {
+            min: 0,
+            max: Some(1),
+        };
+        let byte_count = limits.encode(&mut encoder);
+        let expected_bytes = [0x01, 0x00, 0x01];
+
+        assert_eq!(encoder.as_slice(), expected_bytes);
+        assert_eq!(byte_count, expected_bytes.len() as u8);
+    }
+}
