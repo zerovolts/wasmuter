@@ -38,7 +38,7 @@ impl WasmEncode for ImportSection {
             byte_count += module_name.len() as u8 + name.len() as u8 + 2;
         }
         encoder.write_length(byte_count);
-        byte_count + 3
+        byte_count + 2
     }
 }
 
@@ -60,5 +60,35 @@ impl WasmEncode for ImportDesc {
             }
             ImportDesc::GlobalType => 0, // TODO
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_section_encoding() {
+        let mut encoder = WasmEncoder::new();
+        let import_section = ImportSection(vec![Import {
+            module_name: "fs".to_owned(),
+            name: "read".to_owned(),
+            desc: ImportDesc::TypeIndex(255),
+        }]);
+        let byte_count = import_section.encode(&mut encoder);
+        let expected_bytes = [
+            0x02, // section id
+            0x0b, // byte count
+            0x01, // import count
+            0x02, // module name length
+            0x66, 0x73, // module name ("fs")
+            0x04, // name length
+            0x72, 0x65, 0x61, 0x64, // name ("read")
+            0x00, // import type id
+            0xff, // type index
+        ];
+
+        assert_eq!(encoder.as_slice(), expected_bytes);
+        assert_eq!(byte_count, expected_bytes.len() as u8);
     }
 }
