@@ -6,9 +6,9 @@ use crate::{
 pub struct ExportSection(pub Vec<Export>);
 pub struct Export {
     pub name: String,
-    pub desc: ExportDesc,
+    pub descriptor: ExportDescriptor,
 }
-pub struct ExportDesc {
+pub struct ExportDescriptor {
     pub export_type: ExportType,
     pub index: u8,
 }
@@ -32,8 +32,8 @@ impl WasmEncode for ExportSection {
             let name = export.name.as_str();
             encoder.push_u8(name.len() as u8);
             byte_count += encoder.push_str(name) + 3;
-            encoder.push_u8(export.desc.export_type as u8);
-            encoder.push_u8(export.desc.index);
+            encoder.push_u8(export.descriptor.export_type as u8);
+            encoder.push_u8(export.descriptor.index);
         }
         encoder.write_length(byte_count);
         byte_count + 2
@@ -49,7 +49,7 @@ mod tests {
         let mut encoder = WasmEncoder::new();
         let export_section = ExportSection(vec![Export {
             name: "add".to_owned(),
-            desc: ExportDesc {
+            descriptor: ExportDescriptor {
                 export_type: ExportType::FunctionIndex,
                 index: 255,
             },

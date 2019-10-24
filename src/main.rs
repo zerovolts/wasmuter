@@ -2,8 +2,8 @@ use std::{fs::File, io, io::prelude::*};
 
 use crate::{
     encoder::{WasmEncode, WasmEncoder},
-    export::{Export, ExportDesc, ExportSection, ExportType},
-    import::{Import, ImportDesc, ImportSection},
+    export::{Export, ExportDescriptor, ExportSection, ExportType},
+    import::{Import, ImportDescriptor, ImportSection},
     limits::Limits,
     memory::{Memory, MemorySection},
     module::Module,
@@ -26,7 +26,7 @@ fn main() -> io::Result<()> {
         Section::ImportSection(ImportSection(vec![Import {
             module_name: "console".to_owned(),
             name: "log".to_owned(),
-            desc: ImportDesc::TableType(Table {
+            descriptor: ImportDescriptor::TableType(Table {
                 element_type: ElementType::FunctionReference,
                 limits: Limits { min: 1, max: None },
             }),
@@ -40,7 +40,7 @@ fn main() -> io::Result<()> {
         }])),
         Section::ExportSection(ExportSection(vec![Export {
             name: "mem".to_owned(),
-            desc: ExportDesc {
+            descriptor: ExportDescriptor {
                 export_type: ExportType::MemoryIndex,
                 index: 0,
             },

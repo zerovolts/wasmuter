@@ -9,9 +9,9 @@ pub struct ImportSection(pub Vec<Import>);
 pub struct Import {
     pub module_name: String,
     pub name: String,
-    pub desc: ImportDesc,
+    pub descriptor: ImportDescriptor,
 }
-pub enum ImportDesc {
+pub enum ImportDescriptor {
     TypeIndex(u8),
     TableType(Table),
     MemoryType(Memory),
@@ -34,7 +34,7 @@ impl WasmEncode for ImportSection {
             encoder.push_u8(name.len() as u8);
             encoder.push_str(name);
 
-            byte_count += import.desc.encode(encoder);
+            byte_count += import.descriptor.encode(encoder);
             byte_count += module_name.len() as u8 + name.len() as u8 + 2;
         }
         encoder.write_length(byte_count);
@@ -42,23 +42,23 @@ impl WasmEncode for ImportSection {
     }
 }
 
-impl WasmEncode for ImportDesc {
+impl WasmEncode for ImportDescriptor {
     fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
         match self {
-            ImportDesc::TypeIndex(type_index) => {
+            ImportDescriptor::TypeIndex(type_index) => {
                 encoder.push_u8(0x00);
                 encoder.push_u8(*type_index);
                 2
             }
-            ImportDesc::TableType(table) => {
+            ImportDescriptor::TableType(table) => {
                 encoder.push_u8(0x01);
                 table.encode(encoder) + 1
             }
-            ImportDesc::MemoryType(memory) => {
+            ImportDescriptor::MemoryType(memory) => {
                 encoder.push_u8(0x02);
                 memory.encode(encoder) + 1
             }
-            ImportDesc::GlobalType => 0, // TODO
+            ImportDescriptor::GlobalType => 0, // TODO
         }
     }
 }
@@ -73,7 +73,7 @@ mod tests {
         let import_section = ImportSection(vec![Import {
             module_name: "fs".to_owned(),
             name: "read".to_owned(),
-            desc: ImportDesc::TypeIndex(255),
+            descriptor: ImportDescriptor::TypeIndex(255),
         }]);
         let byte_count = import_section.encode(&mut encoder);
         let expected_bytes = [
