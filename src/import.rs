@@ -26,16 +26,9 @@ impl WasmEncode for ImportSection {
         encoder.push_u8(self.0.len() as u8);
         let mut byte_count = 1;
         for import in self.0.iter() {
-            let module_name = import.module_name.as_str();
-            encoder.push_u8(module_name.len() as u8);
-            encoder.push_str(module_name);
-
-            let name = import.name.as_str();
-            encoder.push_u8(name.len() as u8);
-            encoder.push_str(name);
-
+            byte_count += encoder.push_str(import.module_name.as_str());
+            byte_count += encoder.push_str(import.name.as_str());
             byte_count += import.descriptor.encode(encoder);
-            byte_count += module_name.len() as u8 + name.len() as u8 + 2;
         }
         encoder.write_length(byte_count);
         byte_count + 2

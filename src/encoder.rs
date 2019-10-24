@@ -40,9 +40,11 @@ impl WasmEncoder {
     }
 
     pub fn push_str(&mut self, string: &str) -> u8 {
-        for byte in string.as_bytes().iter() {
+        let bytestring = string.as_bytes();
+        self.bytes.push(bytestring.len() as u8);
+        for byte in bytestring.iter() {
             self.bytes.push(*byte);
         }
-        string.len() as u8
+        bytestring.len() as u8 + 1
     }
 }

@@ -29,9 +29,7 @@ impl WasmEncode for ExportSection {
         encoder.push_u8(self.0.len() as u8);
         let mut byte_count = 1;
         for export in self.0.iter() {
-            let name = export.name.as_str();
-            encoder.push_u8(name.len() as u8);
-            byte_count += encoder.push_str(name) + 3;
+            byte_count += encoder.push_str(export.name.as_str()) + 2;
             encoder.push_u8(export.descriptor.export_type as u8);
             encoder.push_u8(export.descriptor.index);
         }
