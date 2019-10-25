@@ -2,12 +2,14 @@ use std::{fs::File, io, io::prelude::*};
 
 use crate::{
     encoder::{WasmEncode, WasmEncoder},
+    function_type::{FunctionType, ValueType},
     limits::Limits,
     module::Module,
     section::{
         export::{Export, ExportDescriptor, ExportSection},
         import::{Import, ImportDescriptor, ImportSection},
         memory::{Memory, MemorySection},
+        r#type::TypeSection,
         table::{ElementType, Table, TableSection},
         Section,
     },
@@ -22,6 +24,10 @@ mod section;
 
 fn main() -> io::Result<()> {
     let wasm_module = Module(vec![
+        Section::TypeSection(TypeSection(vec![FunctionType(
+            vec![ValueType::I32],
+            vec![ValueType::F64],
+        )])),
         Section::ImportSection(ImportSection(vec![Import {
             module_name: "console".to_owned(),
             name: "log".to_owned(),

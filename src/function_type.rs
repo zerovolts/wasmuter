@@ -3,8 +3,8 @@ use crate::{
     encoder::{WasmEncode, WasmEncoder},
 };
 
-struct FunctionType(Vec<ValueType>, Vec<ValueType>);
-enum ValueType {
+pub struct FunctionType(pub Vec<ValueType>, pub Vec<ValueType>);
+pub enum ValueType {
     I32,
     I64,
     F32,
