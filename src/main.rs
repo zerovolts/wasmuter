@@ -10,6 +10,7 @@ use crate::{
         function_section::FunctionSection,
         import_section::{Import, ImportDescriptor, ImportSection},
         memory_section::{Memory, MemorySection},
+        start_section::StartSection,
         table_section::{ElementType, Table, TableSection},
         type_section::TypeSection,
         Section,
@@ -55,6 +56,7 @@ fn main() -> io::Result<()> {
                 descriptor: ExportDescriptor::MemoryIndex(0),
             },
         ])),
+        Section::StartSection(StartSection(0)),
     ]);
 
     let mut encoder = WasmEncoder::new();
