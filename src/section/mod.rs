@@ -1,10 +1,14 @@
 use crate::{
     encoder::{WasmEncode, WasmEncoder},
-    export::ExportSection,
-    import::ImportSection,
-    memory::MemorySection,
-    table::TableSection,
+    section::{
+        export::ExportSection, import::ImportSection, memory::MemorySection, table::TableSection,
+    },
 };
+
+pub mod export;
+pub mod import;
+pub mod memory;
+pub mod table;
 
 pub enum Section {
     ImportSection(ImportSection),

@@ -1,8 +1,7 @@
 use crate::{
     constants::{IMPORT_SECTION, MEMORY_TYPE, TABLE_TYPE, TYPE_INDEX},
     encoder::{WasmEncode, WasmEncoder},
-    memory::Memory,
-    table::Table,
+    section::{memory::Memory, table::Table},
 };
 
 pub struct ImportSection(pub Vec<Import>);

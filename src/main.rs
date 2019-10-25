@@ -2,25 +2,23 @@ use std::{fs::File, io, io::prelude::*};
 
 use crate::{
     encoder::{WasmEncode, WasmEncoder},
-    export::{Export, ExportDescriptor, ExportSection},
-    import::{Import, ImportDescriptor, ImportSection},
     limits::Limits,
-    memory::{Memory, MemorySection},
     module::Module,
-    section::Section,
-    table::{ElementType, Table, TableSection},
+    section::{
+        export::{Export, ExportDescriptor, ExportSection},
+        import::{Import, ImportDescriptor, ImportSection},
+        memory::{Memory, MemorySection},
+        table::{ElementType, Table, TableSection},
+        Section,
+    },
 };
 
 mod constants;
 mod encoder;
-mod export;
 mod function_type;
-mod import;
 mod limits;
-mod memory;
 mod module;
 mod section;
-mod table;
 
 fn main() -> io::Result<()> {
     let wasm_module = Module(vec![
