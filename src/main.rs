@@ -14,6 +14,7 @@ use crate::{
 mod constants;
 mod encoder;
 mod export;
+mod function_type;
 mod import;
 mod limits;
 mod memory;
