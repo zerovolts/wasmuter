@@ -2,7 +2,7 @@ use std::{fs::File, io, io::prelude::*};
 
 use crate::{
     encoder::{WasmEncode, WasmEncoder},
-    export::{Export, ExportDescriptor, ExportSection, ExportType},
+    export::{Export, ExportDescriptor, ExportSection},
     import::{Import, ImportDescriptor, ImportSection},
     limits::Limits,
     memory::{Memory, MemorySection},
@@ -11,13 +11,13 @@ use crate::{
     table::{ElementType, Table, TableSection},
 };
 
+mod constants;
 mod encoder;
 mod export;
 mod import;
 mod limits;
 mod memory;
 mod module;
-mod opcode;
 mod section;
 mod table;
 
@@ -40,10 +40,7 @@ fn main() -> io::Result<()> {
         }])),
         Section::ExportSection(ExportSection(vec![Export {
             name: "mem".to_owned(),
-            descriptor: ExportDescriptor {
-                export_type: ExportType::MemoryIndex,
-                index: 0,
-            },
+            descriptor: ExportDescriptor::MemoryIndex(0),
         }])),
     ]);
 

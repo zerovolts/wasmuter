@@ -1,7 +1,7 @@
 use crate::{
+    constants::{IMPORT_SECTION, MEMORY_TYPE, TABLE_TYPE, TYPE_INDEX},
     encoder::{WasmEncode, WasmEncoder},
     memory::Memory,
-    opcode::Opcode,
     table::Table,
 };
 
@@ -20,7 +20,7 @@ pub enum ImportDescriptor {
 
 impl WasmEncode for ImportSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
-        Opcode::ImportSection.encode(encoder);
+        encoder.push_u8(IMPORT_SECTION);
         encoder.push_u8(0); // byte_count placeholder
 
         encoder.push_u8(self.0.len() as u8);
@@ -39,16 +39,16 @@ impl WasmEncode for ImportDescriptor {
     fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
         match self {
             ImportDescriptor::TypeIndex(type_index) => {
-                encoder.push_u8(0x00);
+                encoder.push_u8(TYPE_INDEX);
                 encoder.push_u8(*type_index);
                 2
             }
             ImportDescriptor::TableType(table) => {
-                encoder.push_u8(0x01);
+                encoder.push_u8(TABLE_TYPE);
                 table.encode(encoder) + 1
             }
             ImportDescriptor::MemoryType(memory) => {
-                encoder.push_u8(0x02);
+                encoder.push_u8(MEMORY_TYPE);
                 memory.encode(encoder) + 1
             }
             ImportDescriptor::GlobalType => 0, // TODO

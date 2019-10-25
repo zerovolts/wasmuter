@@ -1,7 +1,7 @@
 use crate::{
+    constants::MEMORY_SECTION,
     encoder::{WasmEncode, WasmEncoder},
     limits::Limits,
-    opcode::Opcode,
 };
 
 pub struct MemorySection(pub Vec<Memory>);
@@ -11,7 +11,7 @@ pub struct Memory {
 
 impl WasmEncode for MemorySection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
-        Opcode::MemorySection.encode(encoder);
+        encoder.push_u8(MEMORY_SECTION);
         encoder.push_u8(0); // byte_count placeholder
 
         encoder.push_u8(self.0.len() as u8);

@@ -1,7 +1,7 @@
 use crate::{
+    constants::{FUNCTION_REFERENCE, TABLE_SECTION},
     encoder::{WasmEncode, WasmEncoder},
     limits::Limits,
-    opcode::Opcode,
 };
 
 pub struct TableSection(pub Vec<Table>);
@@ -18,7 +18,7 @@ pub enum ElementType {
 
 impl WasmEncode for TableSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
-        Opcode::TableSection.encode(encoder);
+        encoder.push_u8(TABLE_SECTION);
         encoder.push_u8(0); // byte_count placeholder
 
         encoder.push_u8(self.0.len() as u8);
@@ -33,7 +33,7 @@ impl WasmEncode for TableSection {
 
 impl WasmEncode for Table {
     fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
-        Opcode::FunctionReferenceType.encode(encoder);
+        encoder.push_u8(FUNCTION_REFERENCE);
         self.limits.encode(encoder) + 1
     }
 }

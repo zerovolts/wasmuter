@@ -1,6 +1,6 @@
 use crate::{
+    constants::{EXPORT_SECTION, FUNCTION_INDEX, GLOBAL_INDEX, MEMORY_INDEX, TABLE_INDEX},
     encoder::{WasmEncode, WasmEncoder},
-    opcode::Opcode,
 };
 
 pub struct ExportSection(pub Vec<Export>);
@@ -8,33 +8,50 @@ pub struct Export {
     pub name: String,
     pub descriptor: ExportDescriptor,
 }
-pub struct ExportDescriptor {
-    pub export_type: ExportType,
-    pub index: u8,
-}
-
-#[derive(Copy, Clone)]
-pub enum ExportType {
-    FunctionIndex = 0x00,
-    TableIndex = 0x01,
-    MemoryIndex = 0x02,
-    GlobalIndex = 0x03,
+pub enum ExportDescriptor {
+    FunctionIndex(u8),
+    TableIndex(u8),
+    MemoryIndex(u8),
+    GlobalIndex(u8),
 }
 
 impl WasmEncode for ExportSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
-        Opcode::ExportSection.encode(encoder);
+        encoder.push_u8(EXPORT_SECTION);
         encoder.push_u8(0); // byte_count placeholder
 
         encoder.push_u8(self.0.len() as u8);
         let mut byte_count = 1;
         for export in self.0.iter() {
-            byte_count += encoder.push_str(export.name.as_str()) + 2;
-            encoder.push_u8(export.descriptor.export_type as u8);
-            encoder.push_u8(export.descriptor.index);
+            byte_count += encoder.push_str(export.name.as_str());
+            byte_count += export.descriptor.encode(encoder);
         }
         encoder.write_length(byte_count);
         byte_count + 2
+    }
+}
+
+impl WasmEncode for ExportDescriptor {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+        match self {
+            ExportDescriptor::FunctionIndex(function_index) => {
+                encoder.push_u8(FUNCTION_INDEX);
+                encoder.push_u8(*function_index);
+            }
+            ExportDescriptor::TableIndex(table_index) => {
+                encoder.push_u8(TABLE_INDEX);
+                encoder.push_u8(*table_index);
+            }
+            ExportDescriptor::MemoryIndex(memory_index) => {
+                encoder.push_u8(MEMORY_INDEX);
+                encoder.push_u8(*memory_index);
+            }
+            ExportDescriptor::GlobalIndex(global_index) => {
+                encoder.push_u8(GLOBAL_INDEX);
+                encoder.push_u8(*global_index);
+            }
+        }
+        2
     }
 }
 
@@ -47,10 +64,7 @@ mod tests {
         let mut encoder = WasmEncoder::new();
         let export_section = ExportSection(vec![Export {
             name: "add".to_owned(),
-            descriptor: ExportDescriptor {
-                export_type: ExportType::FunctionIndex,
-                index: 255,
-            },
+            descriptor: ExportDescriptor::FunctionIndex(255),
         }]);
         let byte_count = export_section.encode(&mut encoder);
         let expected_bytes = [
