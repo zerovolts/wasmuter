@@ -6,11 +6,11 @@ use crate::{
     limits::Limits,
     module::Module,
     section::{
-        export::{Export, ExportDescriptor, ExportSection},
-        import::{Import, ImportDescriptor, ImportSection},
-        memory::{Memory, MemorySection},
-        r#type::TypeSection,
-        table::{ElementType, Table, TableSection},
+        export_section::{Export, ExportDescriptor, ExportSection},
+        import_section::{Import, ImportDescriptor, ImportSection},
+        memory_section::{Memory, MemorySection},
+        table_section::{ElementType, Table, TableSection},
+        type_section::TypeSection,
         Section,
     },
 };

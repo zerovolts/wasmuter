@@ -1,16 +1,16 @@
 use crate::{
     encoder::{WasmEncode, WasmEncoder},
     section::{
-        export::ExportSection, import::ImportSection, memory::MemorySection, r#type::TypeSection,
-        table::TableSection,
+        export_section::ExportSection, import_section::ImportSection,
+        memory_section::MemorySection, table_section::TableSection, type_section::TypeSection,
     },
 };
 
-pub mod export;
-pub mod import;
-pub mod memory;
-pub mod table;
-pub mod r#type;
+pub mod export_section;
+pub mod import_section;
+pub mod memory_section;
+pub mod table_section;
+pub mod type_section;
 
 pub enum Section {
     TypeSection(TypeSection),
@@ -23,11 +23,11 @@ pub enum Section {
 impl WasmEncode for Section {
     fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
         match self {
-            Section::TypeSection(r#type) => r#type.encode(encoder),
-            Section::ImportSection(import) => import.encode(encoder),
-            Section::TableSection(table) => table.encode(encoder),
-            Section::MemorySection(memory) => memory.encode(encoder),
-            Section::ExportSection(export) => export.encode(encoder),
+            Section::TypeSection(type_section) => type_section.encode(encoder),
+            Section::ImportSection(import_section) => import_section.encode(encoder),
+            Section::TableSection(table_section) => table_section.encode(encoder),
+            Section::MemorySection(memory_section) => memory_section.encode(encoder),
+            Section::ExportSection(export_section) => export_section.encode(encoder),
         }
     }
 }
