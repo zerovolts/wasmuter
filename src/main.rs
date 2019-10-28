@@ -1,13 +1,15 @@
-use std::{fs::File, io, io::prelude::*};
+use std::{fs::File, i64, io, io::prelude::*};
 
 use crate::{
     encoder::{WasmEncode, WasmEncoder},
+    expression::{Expression, Instruction},
     function_type::{FunctionType, ValueType},
     limits::Limits,
     module::Module,
     section::{
         export_section::{Export, ExportDescriptor, ExportSection},
         function_section::FunctionSection,
+        global_section::{Global, GlobalSection},
         import_section::{Import, ImportDescriptor, ImportSection},
         memory_section::{Memory, MemorySection},
         start_section::StartSection,
@@ -19,6 +21,7 @@ use crate::{
 
 mod constants;
 mod encoder;
+mod expression;
 mod function_type;
 mod limits;
 mod module;
@@ -46,6 +49,10 @@ fn main() -> io::Result<()> {
         Section::MemorySection(MemorySection(vec![Memory {
             limits: Limits { min: 1, max: None },
         }])),
+        Section::GlobalSection(GlobalSection(vec![Global::Var(
+            ValueType::I32,
+            Expression(vec![Instruction::I64Const(i64::max_value())]),
+        )])),
         Section::ExportSection(ExportSection(vec![
             Export {
                 name: "i32_add".to_owned(),
