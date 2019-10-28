@@ -6,7 +6,7 @@ use crate::{
 pub struct StartSection(pub u8);
 
 impl WasmEncode for StartSection {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         encoder.push_u8(START_SECTION);
         encoder.push_u8(1); // byte count
         encoder.push_u8(self.0);
@@ -30,6 +30,6 @@ mod tests {
         ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u8);
+        assert_eq!(byte_count, expected_bytes.len() as u32);
     }
 }

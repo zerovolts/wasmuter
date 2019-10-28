@@ -9,49 +9,47 @@ pub struct Export {
     pub descriptor: ExportDescriptor,
 }
 pub enum ExportDescriptor {
-    FunctionIndex(u8),
-    TableIndex(u8),
-    MemoryIndex(u8),
-    GlobalIndex(u8),
+    FunctionIndex(u32),
+    TableIndex(u32),
+    MemoryIndex(u32),
+    GlobalIndex(u32),
 }
 
 impl WasmEncode for ExportSection {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
+        let mut byte_count = 0;
         encoder.push_u8(EXPORT_SECTION);
         encoder.push_u8(0); // byte_count placeholder
 
-        encoder.push_u8(self.0.len() as u8);
-        let mut byte_count = 1;
+        byte_count += encoder.push_leb_u32(self.0.len() as u32);
         for export in self.0.iter() {
             byte_count += encoder.push_str(export.name.as_str());
             byte_count += export.descriptor.encode(encoder);
         }
-        encoder.write_length(byte_count);
-        byte_count + 2
+        encoder.write_length(byte_count) + byte_count + 1
     }
 }
 
 impl WasmEncode for ExportDescriptor {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         match self {
             ExportDescriptor::FunctionIndex(function_index) => {
                 encoder.push_u8(FUNCTION_INDEX);
-                encoder.push_u8(*function_index);
+                encoder.push_leb_u32(*function_index) + 1
             }
             ExportDescriptor::TableIndex(table_index) => {
                 encoder.push_u8(TABLE_INDEX);
-                encoder.push_u8(*table_index);
+                encoder.push_leb_u32(*table_index) + 1
             }
             ExportDescriptor::MemoryIndex(memory_index) => {
                 encoder.push_u8(MEMORY_INDEX);
-                encoder.push_u8(*memory_index);
+                encoder.push_leb_u32(*memory_index) + 1
             }
             ExportDescriptor::GlobalIndex(global_index) => {
                 encoder.push_u8(GLOBAL_INDEX);
-                encoder.push_u8(*global_index);
+                encoder.push_leb_u32(*global_index) + 1
             }
         }
-        2
     }
 }
 
@@ -69,15 +67,15 @@ mod tests {
         let byte_count = export_section.encode(&mut encoder);
         let expected_bytes = [
             0x07, // section id
-            0x07, // byte count
+            0x08, // byte count
             0x01, // export count
             0x03, // name length
             0x61, 0x64, 0x64, // name ("add")
             0x00, // export type id
-            0xff, // export index
+            0xff, 0x01, // export index (leb128 encoded)
         ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u8);
+        assert_eq!(byte_count, expected_bytes.len() as u32);
     }
 }

@@ -17,22 +17,21 @@ pub enum ElementType {
 }
 
 impl WasmEncode for TableSection {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
+        let mut byte_count = 0;
         encoder.push_u8(TABLE_SECTION);
         encoder.push_u8(0); // byte_count placeholder
 
-        encoder.push_u8(self.0.len() as u8);
-        let mut byte_count = 1;
+        byte_count += encoder.push_leb_u32(self.0.len() as u32);
         for table in self.0.iter() {
             byte_count += table.encode(encoder);
         }
-        encoder.write_length(byte_count);
-        byte_count + 2
+        encoder.write_length(byte_count) + byte_count + 1
     }
 }
 
 impl WasmEncode for Table {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         encoder.push_u8(FUNCTION_REFERENCE);
         self.limits.encode(encoder) + 1
     }
@@ -59,6 +58,6 @@ mod tests {
         ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u8);
+        assert_eq!(byte_count, expected_bytes.len() as u32);
     }
 }

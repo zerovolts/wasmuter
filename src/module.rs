@@ -7,7 +7,7 @@ use crate::{
 pub struct Module(pub Vec<Section>);
 
 impl WasmEncode for Module {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         let mut byte_count = 0;
         byte_count += encoder.push_u32(MAGIC_NUMBER);
         byte_count += encoder.push_u32(VERSION);
@@ -34,6 +34,6 @@ mod tests {
         ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u8);
+        assert_eq!(byte_count, expected_bytes.len() as u32);
     }
 }

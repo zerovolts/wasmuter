@@ -3,20 +3,19 @@ use crate::{
     encoder::{WasmEncode, WasmEncoder},
 };
 
-pub struct FunctionSection(pub Vec<u8>);
+pub struct FunctionSection(pub Vec<u32>);
 
 impl WasmEncode for FunctionSection {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
+        let mut byte_count = 0;
         encoder.push_u8(FUNCTION_SECTION);
         encoder.push_u8(0); // byte_count placeholder
 
-        encoder.push_u8(self.0.len() as u8);
-        let mut byte_count = 1;
+        byte_count += encoder.push_leb_u32(self.0.len() as u32);
         for type_index in self.0.iter() {
-            byte_count += encoder.push_u8(*type_index);
+            byte_count += encoder.push_leb_u32(*type_index);
         }
-        encoder.write_length(byte_count);
-        byte_count + 2
+        encoder.write_length(byte_count) + byte_count + 1
     }
 }
 
@@ -38,6 +37,6 @@ mod tests {
         ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u8);
+        assert_eq!(byte_count, expected_bytes.len() as u32);
     }
 }

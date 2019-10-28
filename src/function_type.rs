@@ -12,17 +12,17 @@ pub enum ValueType {
 }
 
 impl WasmEncode for FunctionType {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         encoder.push_u8(FUNCTION_TYPE);
         let mut byte_count = 2;
 
         // params
-        encoder.push_u8(self.0.len() as u8);
+        encoder.push_leb_u32(self.0.len() as u32);
         for param_type in self.0.iter() {
             byte_count += param_type.encode(encoder);
         }
         // results
-        encoder.push_u8(self.1.len() as u8);
+        encoder.push_leb_u32(self.1.len() as u32);
         for result_type in self.1.iter() {
             byte_count += result_type.encode(encoder);
         }
@@ -31,7 +31,7 @@ impl WasmEncode for FunctionType {
 }
 
 impl WasmEncode for ValueType {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         match self {
             ValueType::I32 => encoder.push_u8(I32),
             ValueType::I64 => encoder.push_u8(I64),
@@ -61,6 +61,6 @@ mod tests {
         ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u8);
+        assert_eq!(byte_count, expected_bytes.len() as u32);
     }
 }

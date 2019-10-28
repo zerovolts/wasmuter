@@ -4,20 +4,20 @@ use crate::{
 };
 
 pub struct Limits {
-    pub min: u8,
-    pub max: Option<u8>,
+    pub min: u32,
+    pub max: Option<u32>,
 }
 
 impl WasmEncode for Limits {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         if self.max.is_some() {
             encoder.push_u8(MAX_PRESENT);
-            encoder.push_u8(self.min);
-            encoder.push_u8(self.max.unwrap());
+            encoder.push_leb_u32(self.min);
+            encoder.push_leb_u32(self.max.unwrap());
             3
         } else {
             encoder.push_u8(MAX_ABSENT);
-            encoder.push_u8(self.min);
+            encoder.push_leb_u32(self.min);
             2
         }
     }
@@ -38,7 +38,7 @@ mod tests {
         ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u8);
+        assert_eq!(byte_count, expected_bytes.len() as u32);
     }
 
     #[test]
@@ -56,6 +56,6 @@ mod tests {
         ];
 
         assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u8);
+        assert_eq!(byte_count, expected_bytes.len() as u32);
     }
 }

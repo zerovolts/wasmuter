@@ -26,7 +26,7 @@ pub enum Section {
 }
 
 impl WasmEncode for Section {
-    fn encode(&self, encoder: &mut WasmEncoder) -> u8 {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         match self {
             Section::TypeSection(type_section) => type_section.encode(encoder),
             Section::ImportSection(import_section) => import_section.encode(encoder),
