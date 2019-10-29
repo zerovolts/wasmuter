@@ -46,26 +46,23 @@ impl WasmEncode for Function {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::expression::Instruction;
+    use crate::{encoder::assert_encoding_eq, expression::Instruction};
 
     #[test]
     fn test_section_encoding() {
-        let mut encoder = WasmEncoder::new();
-        let code_section = CodeSection(vec![Function {
-            locals: vec![],
-            expression: Expression(vec![Instruction::I32Const(6)]),
-        }]);
-        let byte_count = code_section.encode(&mut encoder);
-        let expected_bytes = [
-            0x0a, // section id
-            0x06, // section byte count
-            0x01, // function count
-            0x04, // function byte count
-            0x00, // local count
-            0x41, 0x06, 0xb, // (i32.const 6)
-        ];
-
-        assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u32);
+        assert_encoding_eq(
+            CodeSection(vec![Function {
+                locals: vec![],
+                expression: Expression(vec![Instruction::I32Const(6)]),
+            }]),
+            &[
+                0x0a, // section id
+                0x06, // section byte count
+                0x01, // function count
+                0x04, // function byte count
+                0x00, // local count
+                0x41, 0x06, 0xb, // (i32.const 6)
+            ],
+        );
     }
 }

@@ -26,36 +26,31 @@ impl WasmEncode for Limits {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::encoder::assert_encoding_eq;
 
     #[test]
     fn test_encoding_without_max() {
-        let mut encoder = WasmEncoder::new();
-        let limits = Limits { min: 1, max: None };
-        let byte_count = limits.encode(&mut encoder);
-        let expected_bytes = [
-            0x00, // max flag (off)
-            0x01, // min
-        ];
-
-        assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u32);
+        assert_encoding_eq(
+            Limits { min: 1, max: None },
+            &[
+                0x00, // max flag (off)
+                0x01, // min
+            ],
+        );
     }
 
     #[test]
     fn test_encoding_with_max() {
-        let mut encoder = WasmEncoder::new();
-        let limits = Limits {
-            min: 0,
-            max: Some(1),
-        };
-        let byte_count = limits.encode(&mut encoder);
-        let expected_bytes = [
-            0x01, // max flag (on)
-            0x00, // min
-            0x01, // max
-        ];
-
-        assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u32);
+        assert_encoding_eq(
+            Limits {
+                min: 0,
+                max: Some(1),
+            },
+            &[
+                0x01, // max flag (on)
+                0x00, // min
+                0x01, // max
+            ],
+        )
     }
 }

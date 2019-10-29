@@ -39,27 +39,25 @@ impl WasmEncode for GlobalSection {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::encoder::assert_encoding_eq;
 
     #[test]
     fn test_section_encoding() {
-        let mut encoder = WasmEncoder::new();
-        let global_section = GlobalSection(vec![Global::Const(
-            ValueType::I32,
-            Expression(vec![Instruction::I32Const(42)]),
-        )]);
-        let byte_count = global_section.encode(&mut encoder);
-        let expected_bytes = [
-            0x06, // section id
-            0x06, // byte count
-            0x01, // global count
-            0x7f, // value type
-            0x00, // global type
-            0x41, // i32.const
-            0x2a, // 42
-            0x0b, // end
-        ];
-
-        assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u32);
+        assert_encoding_eq(
+            GlobalSection(vec![Global::Const(
+                ValueType::I32,
+                Expression(vec![Instruction::I32Const(42)]),
+            )]),
+            &[
+                0x06, // section id
+                0x06, // byte count
+                0x01, // global count
+                0x7f, // value type
+                0x00, // global type
+                0x41, // i32.const
+                0x2a, // 42
+                0x0b, // end
+            ],
+        );
     }
 }

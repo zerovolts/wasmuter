@@ -44,23 +44,20 @@ impl WasmEncode for ValueType {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::encoder::assert_encoding_eq;
 
     #[test]
     fn test_encoding() {
-        let mut encoder = WasmEncoder::new();
-        let function_type =
-            FunctionType(vec![ValueType::I32, ValueType::F32], vec![ValueType::I64]);
-        let byte_count = function_type.encode(&mut encoder);
-        let expected_bytes = [
-            0x60, // function type id
-            0x02, // param count
-            0x7f, // i32
-            0x7d, // f32
-            0x01, // result count
-            0x7e, // i64
-        ];
-
-        assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u32);
+        assert_encoding_eq(
+            FunctionType(vec![ValueType::I32, ValueType::F32], vec![ValueType::I64]),
+            &[
+                0x60, // function type id
+                0x02, // param count
+                0x7f, // i32
+                0x7d, // f32
+                0x01, // result count
+                0x7e, // i64
+            ],
+        );
     }
 }

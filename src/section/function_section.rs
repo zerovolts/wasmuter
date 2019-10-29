@@ -22,21 +22,19 @@ impl WasmEncode for FunctionSection {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::encoder::assert_encoding_eq;
 
     #[test]
     fn test_section_encoding() {
-        let mut encoder = WasmEncoder::new();
-        let function_section = FunctionSection(vec![0, 1]);
-        let byte_count = function_section.encode(&mut encoder);
-        let expected_bytes = [
-            0x03, // section id
-            0x03, // byte count
-            0x02, // type index count
-            0x00, // type index
-            0x01, // type index
-        ];
-
-        assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u32);
+        assert_encoding_eq(
+            FunctionSection(vec![0, 1]),
+            &[
+                0x03, // section id
+                0x03, // byte count
+                0x02, // type index count
+                0x00, // type index
+                0x01, // type index
+            ],
+        );
     }
 }

@@ -56,26 +56,24 @@ impl WasmEncode for ExportDescriptor {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::encoder::assert_encoding_eq;
 
     #[test]
     fn test_section_encoding() {
-        let mut encoder = WasmEncoder::new();
-        let export_section = ExportSection(vec![Export {
-            name: "add".to_owned(),
-            descriptor: ExportDescriptor::FunctionIndex(255),
-        }]);
-        let byte_count = export_section.encode(&mut encoder);
-        let expected_bytes = [
-            0x07, // section id
-            0x08, // byte count
-            0x01, // export count
-            0x03, // name length
-            0x61, 0x64, 0x64, // name ("add")
-            0x00, // export type id
-            0xff, 0x01, // export index (leb128 encoded)
-        ];
-
-        assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u32);
+        assert_encoding_eq(
+            ExportSection(vec![Export {
+                name: "add".to_owned(),
+                descriptor: ExportDescriptor::FunctionIndex(255),
+            }]),
+            &[
+                0x07, // section id
+                0x08, // byte count
+                0x01, // export count
+                0x03, // name length
+                0x61, 0x64, 0x64, // name ("add")
+                0x00, // export type id
+                0xff, 0x01, // export index (leb128 encoded)
+            ],
+        )
     }
 }

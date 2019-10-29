@@ -42,27 +42,24 @@ impl WasmEncode for Data {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::expression::Instruction;
+    use crate::{encoder::assert_encoding_eq, expression::Instruction};
 
     #[test]
     fn test_section_encoding() {
-        let mut encoder = WasmEncoder::new();
-        let data_section = DataSection(vec![Data {
-            memory_index: 0,
-            offset: Expression(vec![Instruction::I32Const(0)]),
-            initializer: vec![],
-        }]);
-        let byte_count = data_section.encode(&mut encoder);
-        let expected_bytes = [
-            0x0b, // section id
-            0x06, // byte count
-            0x01, // data count
-            0x00, // memory index
-            0x41, 0x00, 0xb,  // (i32.const 0)
-            0x00, // byte vec length
-        ];
-
-        assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u32);
+        assert_encoding_eq(
+            DataSection(vec![Data {
+                memory_index: 0,
+                offset: Expression(vec![Instruction::I32Const(0)]),
+                initializer: vec![],
+            }]),
+            &[
+                0x0b, // section id
+                0x06, // byte count
+                0x01, // data count
+                0x00, // memory index
+                0x41, 0x00, 0xb,  // (i32.const 0)
+                0x00, // byte vec length
+            ],
+        );
     }
 }

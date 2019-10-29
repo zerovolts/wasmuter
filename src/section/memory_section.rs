@@ -32,22 +32,20 @@ impl WasmEncode for Memory {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::encoder::assert_encoding_eq;
 
     #[test]
     fn test_section_encoding() {
-        let mut encoder = WasmEncoder::new();
-        let memory_section = MemorySection(vec![Memory {
-            limits: Limits { min: 1, max: None },
-        }]);
-        let byte_count = memory_section.encode(&mut encoder);
-        let expected_bytes = [
-            0x05, // section id
-            0x03, // byte count
-            0x01, // memory count
-            0x00, 0x01, // limits
-        ];
-
-        assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u32);
+        assert_encoding_eq(
+            MemorySection(vec![Memory {
+                limits: Limits { min: 1, max: None },
+            }]),
+            &[
+                0x05, // section id
+                0x03, // byte count
+                0x01, // memory count
+                0x00, 0x01, // limits
+            ],
+        );
     }
 }

@@ -56,29 +56,27 @@ impl WasmEncode for ImportDescriptor {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::encoder::assert_encoding_eq;
 
     #[test]
     fn test_section_encoding() {
-        let mut encoder = WasmEncoder::new();
-        let import_section = ImportSection(vec![Import {
-            module_name: "fs".to_owned(),
-            name: "read".to_owned(),
-            descriptor: ImportDescriptor::TypeIndex(255),
-        }]);
-        let byte_count = import_section.encode(&mut encoder);
-        let expected_bytes = [
-            0x02, // section id
-            0x0c, // byte count
-            0x01, // import count
-            0x02, // module name length
-            0x66, 0x73, // module name ("fs")
-            0x04, // name length
-            0x72, 0x65, 0x61, 0x64, // name ("read")
-            0x00, // import type id
-            0xff, 0x01, // type index (leb128 encoded)
-        ];
-
-        assert_eq!(encoder.as_slice(), expected_bytes);
-        assert_eq!(byte_count, expected_bytes.len() as u32);
+        assert_encoding_eq(
+            ImportSection(vec![Import {
+                module_name: "fs".to_owned(),
+                name: "read".to_owned(),
+                descriptor: ImportDescriptor::TypeIndex(255),
+            }]),
+            &[
+                0x02, // section id
+                0x0c, // byte count
+                0x01, // import count
+                0x02, // module name length
+                0x66, 0x73, // module name ("fs")
+                0x04, // name length
+                0x72, 0x65, 0x61, 0x64, // name ("read")
+                0x00, // import type id
+                0xff, 0x01, // type index (leb128 encoded)
+            ],
+        );
     }
 }

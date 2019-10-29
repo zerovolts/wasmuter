@@ -147,6 +147,13 @@ impl WasmEncoder {
     }
 }
 
+pub fn assert_encoding_eq<T: WasmEncode>(item: T, expected_bytes: &[u8]) {
+    let mut encoder = WasmEncoder::new();
+    let byte_count = item.encode(&mut encoder);
+    assert_eq!(encoder.as_slice(), expected_bytes);
+    assert_eq!(byte_count, expected_bytes.len() as u32);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
