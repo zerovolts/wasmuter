@@ -1,13 +1,14 @@
 use crate::{
     encoder::{WasmEncode, WasmEncoder},
     section::{
-        export_section::ExportSection, function_section::FunctionSection,
-        global_section::GlobalSection, import_section::ImportSection,
-        memory_section::MemorySection, start_section::StartSection, table_section::TableSection,
-        type_section::TypeSection,
+        code_section::CodeSection, export_section::ExportSection,
+        function_section::FunctionSection, global_section::GlobalSection,
+        import_section::ImportSection, memory_section::MemorySection, start_section::StartSection,
+        table_section::TableSection, type_section::TypeSection,
     },
 };
 
+pub mod code_section;
 pub mod export_section;
 pub mod function_section;
 pub mod global_section;
@@ -26,6 +27,7 @@ pub enum Section {
     GlobalSection(GlobalSection),
     ExportSection(ExportSection),
     StartSection(StartSection),
+    CodeSection(CodeSection),
 }
 
 impl WasmEncode for Section {
@@ -39,6 +41,7 @@ impl WasmEncode for Section {
             Section::GlobalSection(global_section) => global_section.encode(encoder),
             Section::ExportSection(export_section) => export_section.encode(encoder),
             Section::StartSection(start_section) => start_section.encode(encoder),
+            Section::CodeSection(code_section) => code_section.encode(encoder),
         }
     }
 }

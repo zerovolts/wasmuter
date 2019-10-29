@@ -7,6 +7,7 @@ use crate::{
     limits::Limits,
     module::Module,
     section::{
+        code_section::{CodeSection, Function},
         export_section::{Export, ExportDescriptor, ExportSection},
         function_section::FunctionSection,
         global_section::{Global, GlobalSection},
@@ -64,6 +65,10 @@ fn main() -> io::Result<()> {
             },
         ])),
         Section::StartSection(StartSection(0)),
+        Section::CodeSection(CodeSection(vec![Function {
+            locals: vec![],
+            expression: Expression(vec![Instruction::I32Const(12345)]),
+        }])),
     ]);
 
     let mut encoder = WasmEncoder::new();
