@@ -9,6 +9,7 @@ use crate::{
     section::{
         code_section::{CodeSection, Function},
         data_section::{Data, DataSection},
+        element_section::{Element, ElementSection},
         export_section::{Export, ExportDescriptor, ExportSection},
         function_section::FunctionSection,
         global_section::{Global, GlobalSection},
@@ -66,6 +67,11 @@ fn main() -> io::Result<()> {
             },
         ])),
         Section::StartSection(StartSection(0)),
+        Section::ElementSection(ElementSection(vec![Element {
+            table_index: 0,
+            offset: Expression(vec![Instruction::I32Const(0)]),
+            initializer: vec![0],
+        }])),
         Section::CodeSection(CodeSection(vec![Function {
             locals: vec![],
             expression: Expression(vec![Instruction::I32Const(12345)]),
