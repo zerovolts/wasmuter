@@ -51,11 +51,11 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         let mut encoder = WasmEncoder::new();
-        let memory_section = CodeSection(vec![Function {
+        let code_section = CodeSection(vec![Function {
             locals: vec![],
             expression: Expression(vec![Instruction::I32Const(6)]),
         }]);
-        let byte_count = memory_section.encode(&mut encoder);
+        let byte_count = code_section.encode(&mut encoder);
         let expected_bytes = [
             0x0a, // section id
             0x06, // section byte count

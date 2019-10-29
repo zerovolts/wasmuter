@@ -43,11 +43,11 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         let mut encoder = WasmEncoder::new();
-        let type_section = GlobalSection(vec![Global::Const(
+        let global_section = GlobalSection(vec![Global::Const(
             ValueType::I32,
             Expression(vec![Instruction::I32Const(42)]),
         )]);
-        let byte_count = type_section.encode(&mut encoder);
+        let byte_count = global_section.encode(&mut encoder);
         let expected_bytes = [
             0x06, // section id
             0x06, // byte count

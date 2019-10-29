@@ -26,8 +26,8 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         let mut encoder = WasmEncoder::new();
-        let memory_section = FunctionSection(vec![0, 1]);
-        let byte_count = memory_section.encode(&mut encoder);
+        let function_section = FunctionSection(vec![0, 1]);
+        let byte_count = function_section.encode(&mut encoder);
         let expected_bytes = [
             0x03, // section id
             0x03, // byte count
