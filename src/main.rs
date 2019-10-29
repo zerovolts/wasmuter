@@ -8,6 +8,7 @@ use crate::{
     module::Module,
     section::{
         code_section::{CodeSection, Function},
+        data_section::{Data, DataSection},
         export_section::{Export, ExportDescriptor, ExportSection},
         function_section::FunctionSection,
         global_section::{Global, GlobalSection},
@@ -68,6 +69,11 @@ fn main() -> io::Result<()> {
         Section::CodeSection(CodeSection(vec![Function {
             locals: vec![],
             expression: Expression(vec![Instruction::I32Const(12345)]),
+        }])),
+        Section::DataSection(DataSection(vec![Data {
+            memory_index: 0,
+            offset: Expression(vec![Instruction::I32Const(0)]),
+            initializer: "hello".as_bytes().to_owned(),
         }])),
     ]);
 
