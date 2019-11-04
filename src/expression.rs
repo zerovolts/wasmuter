@@ -44,6 +44,33 @@ pub enum Instruction {
     GlobalGet(u32),
     GlobalSet(u32),
 
+    // Memory Instructions
+    I32Load(MemoryArguments),
+    I64Load(MemoryArguments),
+    F32Load(MemoryArguments),
+    F64Load(MemoryArguments),
+    I32Load8S(MemoryArguments),
+    I32Load8U(MemoryArguments),
+    I32Load16S(MemoryArguments),
+    I32Load16U(MemoryArguments),
+    I64Load8S(MemoryArguments),
+    I64Load8U(MemoryArguments),
+    I64Load16S(MemoryArguments),
+    I64Load16U(MemoryArguments),
+    I64Load32S(MemoryArguments),
+    I64Load32U(MemoryArguments),
+    I32Store(MemoryArguments),
+    I64Store(MemoryArguments),
+    F32Store(MemoryArguments),
+    F64Store(MemoryArguments),
+    I32Store8(MemoryArguments),
+    I32Store16(MemoryArguments),
+    I64Store8(MemoryArguments),
+    I64Store16(MemoryArguments),
+    I64Store32(MemoryArguments),
+    MemorySize,
+    MemoryGrow,
+
     // Numeric Instructions
     I32Const(i32),
     I64Const(i64),
@@ -57,13 +84,13 @@ impl WasmEncode for Instruction {
             Unreachable => encoder.push_u8(UNREACHABLE),
             Nop => encoder.push_u8(NOP),
             Block(block_type, instructions) => {
-                encoder.push_u8(IF)
+                encoder.push_u8(BLOCK)
                     + block_type.encode(encoder)
                     + instructions.encode(encoder)
                     + encoder.push_u8(END)
             }
             Loop(block_type, instructions) => {
-                encoder.push_u8(IF)
+                encoder.push_u8(LOOP)
                     + block_type.encode(encoder)
                     + instructions.encode(encoder)
                     + encoder.push_u8(END)
@@ -78,6 +105,7 @@ impl WasmEncode for Instruction {
                 encoder.push_u8(IF)
                     + block_type.encode(encoder)
                     + if_instr.encode(encoder)
+                    + encoder.push_u8(ELSE)
                     + else_instr.encode(encoder)
                     + encoder.push_u8(END)
             }
@@ -119,6 +147,33 @@ impl WasmEncode for Instruction {
                 encoder.push_u8(GLOBAL_SET) + encoder.push_leb_u32(*global_index)
             }
 
+            // Memory Instructions
+            I32Load(mem_args) => encoder.push_u8(I32_LOAD) + mem_args.encode(encoder),
+            I64Load(mem_args) => encoder.push_u8(I64_LOAD) + mem_args.encode(encoder),
+            F32Load(mem_args) => encoder.push_u8(F32_LOAD) + mem_args.encode(encoder),
+            F64Load(mem_args) => encoder.push_u8(F64_LOAD) + mem_args.encode(encoder),
+            I32Load8S(mem_args) => encoder.push_u8(I32_LOAD8_S) + mem_args.encode(encoder),
+            I32Load8U(mem_args) => encoder.push_u8(I32_LOAD8_U) + mem_args.encode(encoder),
+            I32Load16S(mem_args) => encoder.push_u8(I32_LOAD16_S) + mem_args.encode(encoder),
+            I32Load16U(mem_args) => encoder.push_u8(I32_LOAD16_U) + mem_args.encode(encoder),
+            I64Load8S(mem_args) => encoder.push_u8(I64_LOAD8_S) + mem_args.encode(encoder),
+            I64Load8U(mem_args) => encoder.push_u8(I64_LOAD8_U) + mem_args.encode(encoder),
+            I64Load16S(mem_args) => encoder.push_u8(I64_LOAD16_S) + mem_args.encode(encoder),
+            I64Load16U(mem_args) => encoder.push_u8(I64_LOAD16_U) + mem_args.encode(encoder),
+            I64Load32S(mem_args) => encoder.push_u8(I64_LOAD32_S) + mem_args.encode(encoder),
+            I64Load32U(mem_args) => encoder.push_u8(I64_LOAD32_U) + mem_args.encode(encoder),
+            I32Store(mem_args) => encoder.push_u8(I32_STORE) + mem_args.encode(encoder),
+            I64Store(mem_args) => encoder.push_u8(I64_STORE) + mem_args.encode(encoder),
+            F32Store(mem_args) => encoder.push_u8(F32_STORE) + mem_args.encode(encoder),
+            F64Store(mem_args) => encoder.push_u8(F64_STORE) + mem_args.encode(encoder),
+            I32Store8(mem_args) => encoder.push_u8(I32_STORE8) + mem_args.encode(encoder),
+            I32Store16(mem_args) => encoder.push_u8(I32_STORE16) + mem_args.encode(encoder),
+            I64Store8(mem_args) => encoder.push_u8(I64_STORE8) + mem_args.encode(encoder),
+            I64Store16(mem_args) => encoder.push_u8(I64_STORE16) + mem_args.encode(encoder),
+            I64Store32(mem_args) => encoder.push_u8(I64_STORE32) + mem_args.encode(encoder),
+            MemorySize => encoder.push_u16(MEMORY_SIZE),
+            MemoryGrow => encoder.push_u16(MEMORY_GROW),
+
             // Numeric Instructions
             I32Const(value) => encoder.push_u8(I32_CONST) + encoder.push_leb_i32(*value),
             I64Const(value) => encoder.push_u8(I64_CONST) + encoder.push_leb_i64(*value),
@@ -137,5 +192,16 @@ impl WasmEncode for BlockType {
             BlockType::Empty => encoder.push_u8(EMPTY),
             BlockType::Value(value_type) => value_type.encode(encoder),
         }
+    }
+}
+
+pub struct MemoryArguments {
+    offset: u32,
+    align: u32,
+}
+
+impl WasmEncode for MemoryArguments {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
+        encoder.push_leb_u32(self.offset) + encoder.push_leb_u32(self.align)
     }
 }

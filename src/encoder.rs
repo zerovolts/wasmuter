@@ -50,6 +50,13 @@ impl WasmEncoder {
         1
     }
 
+    pub fn push_u16(&mut self, value: u16) -> u32 {
+        for byte in value.to_le_bytes().iter() {
+            self.bytes.push(*byte);
+        }
+        2
+    }
+
     pub fn push_u32(&mut self, value: u32) -> u32 {
         for byte in value.to_le_bytes().iter() {
             self.bytes.push(*byte);
