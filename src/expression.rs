@@ -33,6 +33,17 @@ pub enum Instruction {
     Call(u32),
     CallIndirect(u32),
 
+    // Parametric Instructions
+    Drop,
+    Select,
+
+    // Variable Instructions
+    LocalGet(u32),
+    LocalSet(u32),
+    LocalTee(u32),
+    GlobalGet(u32),
+    GlobalSet(u32),
+
     // Numeric Instructions
     I32Const(i32),
     I64Const(i64),
@@ -86,6 +97,28 @@ impl WasmEncode for Instruction {
             CallIndirect(type_index) => {
                 encoder.push_u8(CALL_INDIRECT) + encoder.push_leb_u32(*type_index)
             }
+
+            // Parametric Instructions
+            Drop => encoder.push_u8(DROP),
+            Select => encoder.push_u8(SELECT),
+
+            // Variable Instructions
+            LocalGet(local_index) => {
+                encoder.push_u8(LOCAL_GET) + encoder.push_leb_u32(*local_index)
+            }
+            LocalSet(local_index) => {
+                encoder.push_u8(LOCAL_SET) + encoder.push_leb_u32(*local_index)
+            }
+            LocalTee(local_index) => {
+                encoder.push_u8(LOCAL_TEE) + encoder.push_leb_u32(*local_index)
+            }
+            GlobalGet(global_index) => {
+                encoder.push_u8(GLOBAL_GET) + encoder.push_leb_u32(*global_index)
+            }
+            GlobalSet(global_index) => {
+                encoder.push_u8(GLOBAL_SET) + encoder.push_leb_u32(*global_index)
+            }
+
             // Numeric Instructions
             I32Const(value) => encoder.push_u8(I32_CONST) + encoder.push_leb_i32(*value),
             I64Const(value) => encoder.push_u8(I64_CONST) + encoder.push_leb_i64(*value),
