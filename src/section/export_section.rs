@@ -20,13 +20,15 @@ impl WasmEncode for ExportSection {
         let mut byte_count = 0;
         encoder.push_u8(EXPORT_SECTION);
         encoder.push_u8(0); // byte_count placeholder
-
         byte_count += encoder.push_leb_u32(self.0.len() as u32);
-        for export in self.0.iter() {
-            byte_count += encoder.push_str(export.name.as_str());
-            byte_count += export.descriptor.encode(encoder);
-        }
+        byte_count += self.0.encode(encoder);
         encoder.write_length(byte_count) + byte_count + 1
+    }
+}
+
+impl WasmEncode for Export {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
+        encoder.push_str(self.name.as_str()) + self.descriptor.encode(encoder)
     }
 }
 

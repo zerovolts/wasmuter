@@ -22,14 +22,17 @@ impl WasmEncode for ImportSection {
         let mut byte_count = 0;
         encoder.push_u8(IMPORT_SECTION);
         encoder.push_u8(0); // byte_count placeholder
-
         byte_count += encoder.push_leb_u32(self.0.len() as u32);
-        for import in self.0.iter() {
-            byte_count += encoder.push_str(import.module_name.as_str());
-            byte_count += encoder.push_str(import.name.as_str());
-            byte_count += import.descriptor.encode(encoder);
-        }
+        byte_count += self.0.encode(encoder);
         encoder.write_length(byte_count) + byte_count + 1
+    }
+}
+
+impl WasmEncode for Import {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
+        encoder.push_str(self.module_name.as_str())
+            + encoder.push_str(self.name.as_str())
+            + self.descriptor.encode(encoder)
     }
 }
 

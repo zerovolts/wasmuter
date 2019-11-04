@@ -16,11 +16,8 @@ impl WasmEncode for ElementSection {
         let mut byte_count = 0;
         encoder.push_u8(ELEMENT_SECTION);
         encoder.push_u8(0); // byte_count placeholder
-
         byte_count += encoder.push_leb_u32(self.0.len() as u32);
-        for element in self.0.iter() {
-            byte_count += element.encode(encoder);
-        }
+        byte_count += self.0.encode(encoder);
         encoder.write_length(byte_count) + byte_count + 1
     }
 }
@@ -30,7 +27,6 @@ impl WasmEncode for Element {
         let mut byte_count = 0;
         byte_count += encoder.push_leb_u32(self.table_index);
         byte_count += self.offset.encode(encoder);
-
         byte_count += encoder.push_leb_u32(self.initializer.len() as u32);
         for function_index in self.initializer.iter() {
             byte_count += encoder.push_leb_u32(*function_index);

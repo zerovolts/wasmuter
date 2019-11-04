@@ -5,6 +5,16 @@ pub trait WasmEncode {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32;
 }
 
+impl<T: WasmEncode> WasmEncode for Vec<T> {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
+        let mut byte_count = 0;
+        for item in self.iter() {
+            byte_count += item.encode(encoder);
+        }
+        byte_count
+    }
+}
+
 pub struct WasmEncoder {
     bytes: Vec<u8>,
 }

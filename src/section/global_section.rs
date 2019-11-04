@@ -16,23 +16,22 @@ impl WasmEncode for GlobalSection {
         let mut byte_count = 0;
         encoder.push_u8(GLOBAL_SECTION);
         encoder.push_u8(0); // byte_count placeholder
-
         byte_count += encoder.push_leb_u32(self.0.len() as u32);
-        for global in self.0.iter() {
-            byte_count += match global {
-                Global::Const(value_type, expr) => {
-                    value_type.encode(encoder);
-                    encoder.push_u8(CONST);
-                    expr.encode(encoder) + 2
-                }
-                Global::Var(value_type, expr) => {
-                    value_type.encode(encoder);
-                    encoder.push_u8(VAR);
-                    expr.encode(encoder) + 2
-                }
-            };
-        }
+        byte_count += self.0.encode(encoder);
         encoder.write_length(byte_count) + byte_count + 1
+    }
+}
+
+impl WasmEncode for Global {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
+        match self {
+            Global::Const(value_type, expr) => {
+                value_type.encode(encoder) + encoder.push_u8(CONST) + expr.encode(encoder)
+            }
+            Global::Var(value_type, expr) => {
+                value_type.encode(encoder) + encoder.push_u8(VAR) + expr.encode(encoder)
+            }
+        }
     }
 }
 

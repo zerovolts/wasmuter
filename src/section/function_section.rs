@@ -10,7 +10,6 @@ impl WasmEncode for FunctionSection {
         let mut byte_count = 0;
         encoder.push_u8(FUNCTION_SECTION);
         encoder.push_u8(0); // byte_count placeholder
-
         byte_count += encoder.push_leb_u32(self.0.len() as u32);
         for type_index in self.0.iter() {
             byte_count += encoder.push_leb_u32(*type_index);

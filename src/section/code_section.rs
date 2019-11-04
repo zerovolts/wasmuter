@@ -20,11 +20,8 @@ impl WasmEncode for CodeSection {
         let mut byte_count = 0;
         encoder.push_u8(CODE_SECTION);
         encoder.push_u8(0); // byte_count placeholder
-
         byte_count += encoder.push_leb_u32(self.0.len() as u32);
-        for function in self.0.iter() {
-            byte_count += function.encode(encoder);
-        }
+        byte_count += self.0.encode(encoder);
         encoder.write_length(byte_count) + byte_count + 1
     }
 }
@@ -34,12 +31,15 @@ impl WasmEncode for Function {
         let mut byte_count = 0;
         encoder.push_u8(0); // byte_count placeholder
         byte_count += encoder.push_leb_u32(self.locals.len() as u32);
-        for local in self.locals.iter() {
-            byte_count += encoder.push_leb_u32(local.count);
-            local.value_type.encode(encoder);
-        }
+        byte_count += self.locals.encode(encoder);
         byte_count += self.expression.encode(encoder);
         encoder.write_length(byte_count) + byte_count
+    }
+}
+
+impl WasmEncode for Local {
+    fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
+        encoder.push_leb_u32(self.count) + self.value_type.encode(encoder)
     }
 }
 
