@@ -2,7 +2,7 @@ use std::{fs::File, i64, io, io::prelude::*};
 
 use crate::{
     encoder::{WasmEncode, WasmEncoder},
-    expression::{Expression, Instruction},
+    expression::{BlockType, Expression, Instruction},
     function_type::{FunctionType, ValueType},
     limits::Limits,
     module::Module,
@@ -74,7 +74,24 @@ fn main() -> io::Result<()> {
         }])),
         Section::CodeSection(CodeSection(vec![Function {
             locals: vec![],
-            expression: Expression(vec![Instruction::I32Const(12345)]),
+            expression: Expression(vec![
+                Instruction::I32Const(42),
+                Instruction::I32Const(42),
+                Instruction::I32Eq,
+                Instruction::IfElse(
+                    BlockType::Value(ValueType::I32),
+                    vec![
+                        Instruction::I32Const(23),
+                        Instruction::I32Const(-2),
+                        Instruction::I32Add,
+                    ],
+                    vec![
+                        Instruction::I32Const(23),
+                        Instruction::I32Const(-2),
+                        Instruction::I32Sub,
+                    ],
+                ),
+            ]),
         }])),
         Section::DataSection(DataSection(vec![Data {
             memory_index: 0,
