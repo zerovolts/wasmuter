@@ -4,16 +4,6 @@ use crate::{
 };
 
 pub struct ExportSection(pub Vec<Export>);
-pub struct Export {
-    pub name: String,
-    pub descriptor: ExportDescriptor,
-}
-pub enum ExportDescriptor {
-    FunctionIndex(u32),
-    TableIndex(u32),
-    MemoryIndex(u32),
-    GlobalIndex(u32),
-}
 
 impl WasmEncode for ExportSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
@@ -26,10 +16,31 @@ impl WasmEncode for ExportSection {
     }
 }
 
+pub struct Export {
+    pub name: String,
+    pub descriptor: ExportDescriptor,
+}
+
+impl Export {
+    pub fn new(name: &str, descriptor: ExportDescriptor) -> Export {
+        Export {
+            name: name.to_owned(),
+            descriptor,
+        }
+    }
+}
+
 impl WasmEncode for Export {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         encoder.push_str(self.name.as_str()) + self.descriptor.encode(encoder)
     }
+}
+
+pub enum ExportDescriptor {
+    FunctionIndex(u32),
+    TableIndex(u32),
+    MemoryIndex(u32),
+    GlobalIndex(u32),
 }
 
 impl WasmEncode for ExportDescriptor {
@@ -63,10 +74,10 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         assert_encoding_eq(
-            ExportSection(vec![Export {
-                name: "add".to_owned(),
-                descriptor: ExportDescriptor::FunctionIndex(255),
-            }]),
+            ExportSection(vec![Export::new(
+                "add",
+                ExportDescriptor::FunctionIndex(255),
+            )]),
             &[
                 0x07, // section id
                 0x08, // byte count

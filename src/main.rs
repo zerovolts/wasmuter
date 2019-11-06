@@ -31,73 +31,55 @@ mod module;
 mod section;
 
 fn main() -> io::Result<()> {
+    use Instruction::*;
     let wasm_module = Module(vec![
-        Section::TypeSection(TypeSection(vec![FunctionType(
+        Section::TypeSection(TypeSection(vec![FunctionType::new(
             vec![ValueType::I32, ValueType::I32],
             vec![ValueType::I32],
         )])),
-        Section::ImportSection(ImportSection(vec![Import {
-            module_name: "console".to_owned(),
-            name: "log".to_owned(),
-            descriptor: ImportDescriptor::TableType(Table {
-                element_type: ElementType::FunctionReference,
-                limits: Limits { min: 1, max: None },
-            }),
-        }])),
+        Section::ImportSection(ImportSection(vec![Import::new(
+            "console",
+            "log",
+            ImportDescriptor::TableType(Table::new(ElementType::FunctionReference, Limits::min(1))),
+        )])),
         Section::FunctionSection(FunctionSection(vec![0])),
-        Section::TableSection(TableSection(vec![Table {
-            element_type: ElementType::FunctionReference,
-            limits: Limits { min: 1, max: None },
-        }])),
-        Section::MemorySection(MemorySection(vec![Memory {
-            limits: Limits { min: 1, max: None },
-        }])),
+        Section::TableSection(TableSection(vec![Table::new(
+            ElementType::FunctionReference,
+            Limits::min(1),
+        )])),
+        Section::MemorySection(MemorySection(vec![Memory::new(Limits::min(1))])),
         Section::GlobalSection(GlobalSection(vec![Global::Var(
             ValueType::I32,
             Expression(vec![Instruction::I64Const(i64::max_value())]),
         )])),
         Section::ExportSection(ExportSection(vec![
-            Export {
-                name: "i32_add".to_owned(),
-                descriptor: ExportDescriptor::FunctionIndex(0),
-            },
-            Export {
-                name: "mem".to_owned(),
-                descriptor: ExportDescriptor::MemoryIndex(0),
-            },
+            Export::new("i32_add", ExportDescriptor::FunctionIndex(0)),
+            Export::new("mem", ExportDescriptor::MemoryIndex(0)),
         ])),
         Section::StartSection(StartSection(0)),
-        Section::ElementSection(ElementSection(vec![Element {
-            table_index: 0,
-            offset: Expression(vec![Instruction::I32Const(0)]),
-            initializer: vec![0],
-        }])),
-        Section::CodeSection(CodeSection(vec![Function {
-            locals: vec![],
-            expression: Expression(vec![
-                Instruction::I32Const(42),
-                Instruction::I32Const(42),
-                Instruction::I32Eq,
-                Instruction::IfElse(
+        Section::ElementSection(ElementSection(vec![Element::new(
+            0,
+            Expression(vec![Instruction::I32Const(0)]),
+            vec![0],
+        )])),
+        Section::CodeSection(CodeSection(vec![Function::new(
+            vec![],
+            Expression(vec![
+                I32Const(42),
+                I32Const(42),
+                I32Eq,
+                IfElse(
                     BlockType::Value(ValueType::I32),
-                    vec![
-                        Instruction::I32Const(23),
-                        Instruction::I32Const(-2),
-                        Instruction::I32Add,
-                    ],
-                    vec![
-                        Instruction::I32Const(23),
-                        Instruction::I32Const(-2),
-                        Instruction::I32Sub,
-                    ],
+                    vec![I32Const(23), I32Const(-2), I32Add],
+                    vec![I32Const(23), I32Const(-2), I32Sub],
                 ),
             ]),
-        }])),
-        Section::DataSection(DataSection(vec![Data {
-            memory_index: 0,
-            offset: Expression(vec![Instruction::I32Const(0)]),
-            initializer: "hello".as_bytes().to_owned(),
-        }])),
+        )])),
+        Section::DataSection(DataSection(vec![Data::new(
+            0,
+            Expression(vec![Instruction::I32Const(0)]),
+            "hello".as_bytes().to_owned(),
+        )])),
     ]);
 
     let mut encoder = WasmEncoder::new();

@@ -25,7 +25,7 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         assert_encoding_eq(
-            TypeSection(vec![FunctionType(vec![ValueType::I32], vec![])]),
+            TypeSection(vec![FunctionType::new(vec![ValueType::I32], vec![])]),
             &[
                 0x01, // section id
                 0x05, // byte count

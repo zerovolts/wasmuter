@@ -5,17 +5,6 @@ use crate::{
 };
 
 pub struct ImportSection(pub Vec<Import>);
-pub struct Import {
-    pub module_name: String,
-    pub name: String,
-    pub descriptor: ImportDescriptor,
-}
-pub enum ImportDescriptor {
-    TypeIndex(u32),
-    TableType(Table),
-    MemoryType(Memory),
-    GlobalType, // TODO
-}
 
 impl WasmEncode for ImportSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
@@ -28,12 +17,35 @@ impl WasmEncode for ImportSection {
     }
 }
 
+pub struct Import {
+    pub module_name: String,
+    pub name: String,
+    pub descriptor: ImportDescriptor,
+}
+
+impl Import {
+    pub fn new(module_name: &str, name: &str, descriptor: ImportDescriptor) -> Import {
+        Import {
+            module_name: module_name.to_owned(),
+            name: name.to_owned(),
+            descriptor,
+        }
+    }
+}
+
 impl WasmEncode for Import {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         encoder.push_str(self.module_name.as_str())
             + encoder.push_str(self.name.as_str())
             + self.descriptor.encode(encoder)
     }
+}
+
+pub enum ImportDescriptor {
+    TypeIndex(u32),
+    TableType(Table),
+    MemoryType(Memory),
+    GlobalType, // TODO
 }
 
 impl WasmEncode for ImportDescriptor {
@@ -64,11 +76,11 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         assert_encoding_eq(
-            ImportSection(vec![Import {
-                module_name: "fs".to_owned(),
-                name: "read".to_owned(),
-                descriptor: ImportDescriptor::TypeIndex(255),
-            }]),
+            ImportSection(vec![Import::new(
+                "fs",
+                "read",
+                ImportDescriptor::TypeIndex(255),
+            )]),
             &[
                 0x02, // section id
                 0x0c, // byte count

@@ -5,11 +5,6 @@ use crate::{
 };
 
 pub struct ElementSection(pub Vec<Element>);
-pub struct Element {
-    pub table_index: u32,
-    pub offset: Expression,
-    pub initializer: Vec<u32>,
-}
 
 impl WasmEncode for ElementSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
@@ -19,6 +14,22 @@ impl WasmEncode for ElementSection {
         byte_count += encoder.push_leb_u32(self.0.len() as u32);
         byte_count += self.0.encode(encoder);
         encoder.write_length(byte_count) + byte_count + 1
+    }
+}
+
+pub struct Element {
+    pub table_index: u32,
+    pub offset: Expression,
+    pub initializer: Vec<u32>,
+}
+
+impl Element {
+    pub fn new(table_index: u32, offset: Expression, initializer: Vec<u32>) -> Element {
+        Element {
+            table_index,
+            offset,
+            initializer,
+        }
     }
 }
 
@@ -43,11 +54,11 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         assert_encoding_eq(
-            ElementSection(vec![Element {
-                table_index: 0,
-                offset: Expression(vec![Instruction::I32Const(0)]),
-                initializer: vec![0],
-            }]),
+            ElementSection(vec![Element::new(
+                0,
+                Expression(vec![Instruction::I32Const(0)]),
+                vec![0],
+            )]),
             &[
                 0x09, // section id
                 0x07, // byte count

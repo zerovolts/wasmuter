@@ -5,11 +5,6 @@ use crate::{
 };
 
 pub struct DataSection(pub Vec<Data>);
-pub struct Data {
-    pub memory_index: u32,
-    pub offset: Expression,
-    pub initializer: Vec<u8>,
-}
 
 impl WasmEncode for DataSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
@@ -19,6 +14,22 @@ impl WasmEncode for DataSection {
         byte_count += encoder.push_leb_u32(self.0.len() as u32);
         byte_count += self.0.encode(encoder);
         encoder.write_length(byte_count) + byte_count + 1
+    }
+}
+
+pub struct Data {
+    pub memory_index: u32,
+    pub offset: Expression,
+    pub initializer: Vec<u8>,
+}
+
+impl Data {
+    pub fn new(memory_index: u32, offset: Expression, initializer: Vec<u8>) -> Data {
+        Data {
+            memory_index,
+            offset,
+            initializer,
+        }
     }
 }
 
@@ -43,11 +54,11 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         assert_encoding_eq(
-            DataSection(vec![Data {
-                memory_index: 0,
-                offset: Expression(vec![Instruction::I32Const(0)]),
-                initializer: vec![],
-            }]),
+            DataSection(vec![Data::new(
+                0,
+                Expression(vec![Instruction::I32Const(0)]),
+                vec![],
+            )]),
             &[
                 0x0b, // section id
                 0x06, // byte count

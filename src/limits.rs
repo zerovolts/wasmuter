@@ -8,6 +8,20 @@ pub struct Limits {
     pub max: Option<u32>,
 }
 
+impl Limits {
+    pub fn new(min: u32, max: Option<u32>) -> Limits {
+        Limits { min, max }
+    }
+
+    pub fn min(min: u32) -> Limits {
+        Limits::new(min, None)
+    }
+
+    pub fn min_max(min: u32, max: u32) -> Limits {
+        Limits::new(min, Some(max))
+    }
+}
+
 impl WasmEncode for Limits {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         if self.max.is_some() {
@@ -31,7 +45,7 @@ mod tests {
     #[test]
     fn test_encoding_without_max() {
         assert_encoding_eq(
-            Limits { min: 1, max: None },
+            Limits::min(1),
             &[
                 0x00, // max flag (off)
                 0x01, // min
@@ -42,10 +56,7 @@ mod tests {
     #[test]
     fn test_encoding_with_max() {
         assert_encoding_eq(
-            Limits {
-                min: 0,
-                max: Some(1),
-            },
+            Limits::min_max(0, 1),
             &[
                 0x01, // max flag (on)
                 0x00, // min

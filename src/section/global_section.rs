@@ -6,10 +6,6 @@ use crate::{
 };
 
 pub struct GlobalSection(pub Vec<Global>);
-pub enum Global {
-    Const(ValueType, Expression),
-    Var(ValueType, Expression),
-}
 
 impl WasmEncode for GlobalSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
@@ -20,6 +16,11 @@ impl WasmEncode for GlobalSection {
         byte_count += self.0.encode(encoder);
         encoder.write_length(byte_count) + byte_count + 1
     }
+}
+
+pub enum Global {
+    Const(ValueType, Expression),
+    Var(ValueType, Expression),
 }
 
 impl WasmEncode for Global {

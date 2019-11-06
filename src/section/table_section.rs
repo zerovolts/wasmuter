@@ -5,16 +5,6 @@ use crate::{
 };
 
 pub struct TableSection(pub Vec<Table>);
-// The Wasm spec only supports one element_type currently, so we just push that
-// opcode without checking the field.
-#[allow(dead_code)]
-pub struct Table {
-    pub element_type: ElementType,
-    pub limits: Limits,
-}
-pub enum ElementType {
-    FunctionReference,
-}
 
 impl WasmEncode for TableSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
@@ -27,10 +17,31 @@ impl WasmEncode for TableSection {
     }
 }
 
+// The Wasm spec only supports one element_type currently, so we just push that
+// opcode without checking the field.
+#[allow(dead_code)]
+pub struct Table {
+    pub element_type: ElementType,
+    pub limits: Limits,
+}
+
+impl Table {
+    pub fn new(element_type: ElementType, limits: Limits) -> Table {
+        Table {
+            element_type,
+            limits,
+        }
+    }
+}
+
 impl WasmEncode for Table {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         encoder.push_u8(FUNCTION_REFERENCE) + self.limits.encode(encoder)
     }
+}
+
+pub enum ElementType {
+    FunctionReference,
 }
 
 #[cfg(test)]
@@ -41,10 +52,10 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         assert_encoding_eq(
-            TableSection(vec![Table {
-                element_type: ElementType::FunctionReference,
-                limits: Limits { min: 1, max: None },
-            }]),
+            TableSection(vec![Table::new(
+                ElementType::FunctionReference,
+                Limits::min(1),
+            )]),
             &[
                 0x04, // section id
                 0x04, // byte count

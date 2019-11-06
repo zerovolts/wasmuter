@@ -6,14 +6,6 @@ use crate::{
 };
 
 pub struct CodeSection(pub Vec<Function>);
-pub struct Function {
-    pub locals: Vec<Local>,
-    pub expression: Expression,
-}
-pub struct Local {
-    count: u32,
-    value_type: ValueType,
-}
 
 impl WasmEncode for CodeSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
@@ -26,6 +18,17 @@ impl WasmEncode for CodeSection {
     }
 }
 
+pub struct Function {
+    pub locals: Vec<Local>,
+    pub expression: Expression,
+}
+
+impl Function {
+    pub fn new(locals: Vec<Local>, expression: Expression) -> Function {
+        Function { locals, expression }
+    }
+}
+
 impl WasmEncode for Function {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         let mut byte_count = 0;
@@ -34,6 +37,17 @@ impl WasmEncode for Function {
         byte_count += self.locals.encode(encoder);
         byte_count += self.expression.encode(encoder);
         encoder.write_length(byte_count) + byte_count
+    }
+}
+
+pub struct Local {
+    count: u32,
+    value_type: ValueType,
+}
+
+impl Local {
+    pub fn new(count: u32, value_type: ValueType) -> Local {
+        Local { count, value_type }
     }
 }
 
@@ -51,10 +65,10 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         assert_encoding_eq(
-            CodeSection(vec![Function {
-                locals: vec![],
-                expression: Expression(vec![Instruction::I32Const(6)]),
-            }]),
+            CodeSection(vec![Function::new(
+                vec![],
+                Expression(vec![Instruction::I32Const(6)]),
+            )]),
             &[
                 0x0a, // section id
                 0x06, // section byte count

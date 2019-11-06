@@ -3,12 +3,18 @@ use crate::{
     encoder::{WasmEncode, WasmEncoder},
 };
 
-pub struct FunctionType(pub Vec<ValueType>, pub Vec<ValueType>);
-pub enum ValueType {
-    I32,
-    I64,
-    F32,
-    F64,
+pub struct FunctionType {
+    pub parameters: Vec<ValueType>,
+    pub results: Vec<ValueType>,
+}
+
+impl FunctionType {
+    pub fn new(parameters: Vec<ValueType>, results: Vec<ValueType>) -> FunctionType {
+        FunctionType {
+            parameters,
+            results,
+        }
+    }
 }
 
 impl WasmEncode for FunctionType {
@@ -17,17 +23,24 @@ impl WasmEncode for FunctionType {
         let mut byte_count = 2;
 
         // params
-        encoder.push_leb_u32(self.0.len() as u32);
-        for param_type in self.0.iter() {
+        encoder.push_leb_u32(self.parameters.len() as u32);
+        for param_type in self.parameters.iter() {
             byte_count += param_type.encode(encoder);
         }
         // results
-        encoder.push_leb_u32(self.1.len() as u32);
-        for result_type in self.1.iter() {
+        encoder.push_leb_u32(self.results.len() as u32);
+        for result_type in self.results.iter() {
             byte_count += result_type.encode(encoder);
         }
         byte_count + 1
     }
+}
+
+pub enum ValueType {
+    I32,
+    I64,
+    F32,
+    F64,
 }
 
 impl WasmEncode for ValueType {
@@ -49,7 +62,7 @@ mod tests {
     #[test]
     fn test_encoding() {
         assert_encoding_eq(
-            FunctionType(vec![ValueType::I32, ValueType::F32], vec![ValueType::I64]),
+            FunctionType::new(vec![ValueType::I32, ValueType::F32], vec![ValueType::I64]),
             &[
                 0x60, // function type id
                 0x02, // param count
