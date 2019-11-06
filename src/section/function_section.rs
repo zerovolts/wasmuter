@@ -1,9 +1,10 @@
 use crate::{
     constants::FUNCTION_SECTION,
     encoder::{WasmEncode, WasmEncoder},
+    index::TypeIndex,
 };
 
-pub struct FunctionSection(pub Vec<u32>);
+pub struct FunctionSection(pub Vec<TypeIndex>);
 
 impl WasmEncode for FunctionSection {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
@@ -12,7 +13,7 @@ impl WasmEncode for FunctionSection {
         encoder.push_u8(0); // byte_count placeholder
         byte_count += encoder.push_leb_u32(self.0.len() as u32);
         for type_index in self.0.iter() {
-            byte_count += encoder.push_leb_u32(*type_index);
+            byte_count += encoder.push_leb_u32(type_index.0);
         }
         encoder.write_length(byte_count) + byte_count + 1
     }
@@ -26,7 +27,7 @@ mod tests {
     #[test]
     fn test_section_encoding() {
         assert_encoding_eq(
-            FunctionSection(vec![0, 1]),
+            FunctionSection(vec![TypeIndex(0), TypeIndex(1)]),
             &[
                 0x03, // section id
                 0x03, // byte count

@@ -1,6 +1,7 @@
 use crate::{
     constants::{EXPORT_SECTION, FUNCTION_INDEX, GLOBAL_INDEX, MEMORY_INDEX, TABLE_INDEX},
     encoder::{WasmEncode, WasmEncoder},
+    index::{FunctionIndex, GlobalIndex, MemoryIndex, TableIndex},
 };
 
 pub struct ExportSection(pub Vec<Export>);
@@ -37,10 +38,10 @@ impl WasmEncode for Export {
 }
 
 pub enum ExportDescriptor {
-    FunctionIndex(u32),
-    TableIndex(u32),
-    MemoryIndex(u32),
-    GlobalIndex(u32),
+    FunctionIndex(FunctionIndex),
+    TableIndex(TableIndex),
+    MemoryIndex(MemoryIndex),
+    GlobalIndex(GlobalIndex),
 }
 
 impl WasmEncode for ExportDescriptor {
@@ -48,19 +49,19 @@ impl WasmEncode for ExportDescriptor {
         match self {
             ExportDescriptor::FunctionIndex(function_index) => {
                 encoder.push_u8(FUNCTION_INDEX);
-                encoder.push_leb_u32(*function_index) + 1
+                encoder.push_leb_u32(function_index.0) + 1
             }
             ExportDescriptor::TableIndex(table_index) => {
                 encoder.push_u8(TABLE_INDEX);
-                encoder.push_leb_u32(*table_index) + 1
+                encoder.push_leb_u32(table_index.0) + 1
             }
             ExportDescriptor::MemoryIndex(memory_index) => {
                 encoder.push_u8(MEMORY_INDEX);
-                encoder.push_leb_u32(*memory_index) + 1
+                encoder.push_leb_u32(memory_index.0) + 1
             }
             ExportDescriptor::GlobalIndex(global_index) => {
                 encoder.push_u8(GLOBAL_INDEX);
-                encoder.push_leb_u32(*global_index) + 1
+                encoder.push_leb_u32(global_index.0) + 1
             }
         }
     }
@@ -76,7 +77,7 @@ mod tests {
         assert_encoding_eq(
             ExportSection(vec![Export::new(
                 "add",
-                ExportDescriptor::FunctionIndex(255),
+                ExportDescriptor::FunctionIndex(FunctionIndex(255)),
             )]),
             &[
                 0x07, // section id

@@ -3,6 +3,7 @@ use crate::{
     constants::*,
     encoder::{WasmEncode, WasmEncoder},
     function_type::ValueType,
+    index::{FunctionIndex, GlobalIndex, LabelIndex, LocalIndex, TypeIndex},
 };
 
 pub struct Expression(pub Vec<Instruction>);
@@ -26,23 +27,23 @@ pub enum Instruction {
     Loop(BlockType, Vec<Instruction>),
     If(BlockType, Vec<Instruction>),
     IfElse(BlockType, Vec<Instruction>, Vec<Instruction>),
-    Branch(u32),
-    BranchIf(u32),
-    BranchTable(Vec<u32>, u32),
+    Branch(LabelIndex),
+    BranchIf(LabelIndex),
+    BranchTable(Vec<LabelIndex>, LabelIndex),
     Return,
-    Call(u32),
-    CallIndirect(u32),
+    Call(FunctionIndex),
+    CallIndirect(TypeIndex),
 
     // Parametric Instructions
     Drop,
     Select,
 
     // Variable Instructions
-    LocalGet(u32),
-    LocalSet(u32),
-    LocalTee(u32),
-    GlobalGet(u32),
-    GlobalSet(u32),
+    LocalGet(LocalIndex),
+    LocalSet(LocalIndex),
+    LocalTee(LocalIndex),
+    GlobalGet(GlobalIndex),
+    GlobalSet(GlobalIndex),
 
     // Memory Instructions
     I32Load(MemoryArguments),
@@ -243,21 +244,21 @@ impl WasmEncode for Instruction {
                     + else_instr.encode(encoder)
                     + encoder.push_u8(END)
             }
-            Branch(label_index) => encoder.push_u8(BR) + encoder.push_leb_u32(*label_index),
-            BranchIf(label_index) => encoder.push_u8(BR_IF) + encoder.push_leb_u32(*label_index),
+            Branch(label_index) => encoder.push_u8(BR) + encoder.push_leb_u32(label_index.0),
+            BranchIf(label_index) => encoder.push_u8(BR_IF) + encoder.push_leb_u32(label_index.0),
             BranchTable(label_indices, label_index) => {
                 let mut byte_count = 0;
                 byte_count += encoder.push_u8(BR_TABLE);
                 for index in label_indices {
-                    byte_count += encoder.push_leb_u32(*index);
+                    byte_count += encoder.push_leb_u32(index.0);
                 }
-                byte_count += encoder.push_leb_u32(*label_index);
+                byte_count += encoder.push_leb_u32(label_index.0);
                 byte_count
             }
             Return => encoder.push_u8(RETURN),
-            Call(function_index) => encoder.push_u8(CALL) + encoder.push_leb_u32(*function_index),
+            Call(function_index) => encoder.push_u8(CALL) + encoder.push_leb_u32(function_index.0),
             CallIndirect(type_index) => {
-                encoder.push_u8(CALL_INDIRECT) + encoder.push_leb_u32(*type_index)
+                encoder.push_u8(CALL_INDIRECT) + encoder.push_leb_u32(type_index.0)
             }
 
             // Parametric Instructions
@@ -266,19 +267,19 @@ impl WasmEncode for Instruction {
 
             // Variable Instructions
             LocalGet(local_index) => {
-                encoder.push_u8(LOCAL_GET) + encoder.push_leb_u32(*local_index)
+                encoder.push_u8(LOCAL_GET) + encoder.push_leb_u32(local_index.0)
             }
             LocalSet(local_index) => {
-                encoder.push_u8(LOCAL_SET) + encoder.push_leb_u32(*local_index)
+                encoder.push_u8(LOCAL_SET) + encoder.push_leb_u32(local_index.0)
             }
             LocalTee(local_index) => {
-                encoder.push_u8(LOCAL_TEE) + encoder.push_leb_u32(*local_index)
+                encoder.push_u8(LOCAL_TEE) + encoder.push_leb_u32(local_index.0)
             }
             GlobalGet(global_index) => {
-                encoder.push_u8(GLOBAL_GET) + encoder.push_leb_u32(*global_index)
+                encoder.push_u8(GLOBAL_GET) + encoder.push_leb_u32(global_index.0)
             }
             GlobalSet(global_index) => {
-                encoder.push_u8(GLOBAL_SET) + encoder.push_leb_u32(*global_index)
+                encoder.push_u8(GLOBAL_SET) + encoder.push_leb_u32(global_index.0)
             }
 
             // Memory Instructions

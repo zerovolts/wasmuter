@@ -4,6 +4,7 @@ use crate::{
     encoder::{WasmEncode, WasmEncoder},
     expression::{Expression, Instruction, MemoryArguments},
     function_type::{FunctionType, ValueType},
+    index::{FunctionIndex, MemoryIndex, TypeIndex},
     limits::Limits,
     module::Module,
     section::{
@@ -22,6 +23,7 @@ mod constants;
 mod encoder;
 mod expression;
 mod function_type;
+mod index;
 mod limits;
 mod module;
 mod section;
@@ -40,6 +42,11 @@ fn main() -> io::Result<()> {
 
 fn hello_world_example() -> Module {
     use Instruction::*;
+    let memory = MemoryIndex(0);
+    let write_fn = FunctionIndex(0);
+    let write_type = TypeIndex(0);
+    let hello_world_fn = FunctionIndex(1);
+    let hello_world_type = TypeIndex(1);
     Module(vec![
         Section::TypeSection(TypeSection(vec![
             FunctionType::new(
@@ -56,13 +63,13 @@ fn hello_world_example() -> Module {
         Section::ImportSection(ImportSection(vec![Import::new(
             "wasi_unstable",
             "fd_write",
-            ImportDescriptor::TypeIndex(0),
+            ImportDescriptor::TypeIndex(write_type),
         )])),
-        Section::FunctionSection(FunctionSection(vec![1])),
+        Section::FunctionSection(FunctionSection(vec![hello_world_type])),
         Section::MemorySection(MemorySection(vec![Memory::new(Limits::min(1))])),
         Section::ExportSection(ExportSection(vec![
-            Export::new("memory", ExportDescriptor::MemoryIndex(0)),
-            Export::new("_start", ExportDescriptor::FunctionIndex(1)),
+            Export::new("memory", ExportDescriptor::MemoryIndex(memory)),
+            Export::new("_start", ExportDescriptor::FunctionIndex(hello_world_fn)),
         ])),
         Section::CodeSection(CodeSection(vec![Function::new(
             vec![],
@@ -77,12 +84,12 @@ fn hello_world_example() -> Module {
                 I32Const(0),
                 I32Const(1),
                 I32Const(20),
-                Call(0),
+                Call(write_fn),
                 Drop,
             ]),
         )])),
         Section::DataSection(DataSection(vec![Data::new(
-            0,
+            memory,
             Expression(vec![I32Const(8)]),
             "hello world!\n".as_bytes().to_owned(),
         )])),

@@ -1,7 +1,8 @@
 use crate::{
-    constants::{IMPORT_SECTION, MEMORY_TYPE, TABLE_TYPE, TYPE_INDEX},
+    constants::{GLOBAL_TYPE, IMPORT_SECTION, MEMORY_TYPE, TABLE_TYPE, TYPE_INDEX},
     encoder::{WasmEncode, WasmEncoder},
-    section::{memory_section::Memory, table_section::Table},
+    index::TypeIndex,
+    section::{global_section::Global, memory_section::Memory, table_section::Table},
 };
 
 pub struct ImportSection(pub Vec<Import>);
@@ -42,28 +43,27 @@ impl WasmEncode for Import {
 }
 
 pub enum ImportDescriptor {
-    TypeIndex(u32),
+    TypeIndex(TypeIndex),
     TableType(Table),
     MemoryType(Memory),
-    GlobalType, // TODO
+    GlobalType(Global),
 }
 
 impl WasmEncode for ImportDescriptor {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         match self {
             ImportDescriptor::TypeIndex(type_index) => {
-                encoder.push_u8(TYPE_INDEX);
-                encoder.push_leb_u32(*type_index) + 1
+                encoder.push_u8(TYPE_INDEX) + encoder.push_leb_u32(type_index.0)
             }
             ImportDescriptor::TableType(table) => {
-                encoder.push_u8(TABLE_TYPE);
-                table.encode(encoder) + 1
+                encoder.push_u8(TABLE_TYPE) + table.encode(encoder)
             }
             ImportDescriptor::MemoryType(memory) => {
-                encoder.push_u8(MEMORY_TYPE);
-                memory.encode(encoder) + 1
+                encoder.push_u8(MEMORY_TYPE) + memory.encode(encoder)
             }
-            ImportDescriptor::GlobalType => 0, // TODO
+            ImportDescriptor::GlobalType(global) => {
+                encoder.push_u8(GLOBAL_TYPE) + global.encode(encoder)
+            }
         }
     }
 }
@@ -79,7 +79,7 @@ mod tests {
             ImportSection(vec![Import::new(
                 "fs",
                 "read",
-                ImportDescriptor::TypeIndex(255),
+                ImportDescriptor::TypeIndex(TypeIndex(255)),
             )]),
             &[
                 0x02, // section id
