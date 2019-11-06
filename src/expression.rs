@@ -468,6 +468,12 @@ pub struct MemoryArguments {
     pub align: u32,
 }
 
+impl MemoryArguments {
+    pub fn new(offset: u32, align: u32) -> MemoryArguments {
+        MemoryArguments { offset, align }
+    }
+}
+
 impl WasmEncode for MemoryArguments {
     fn encode(&self, encoder: &mut WasmEncoder) -> u32 {
         encoder.push_leb_u32(self.offset) + encoder.push_leb_u32(self.align)
