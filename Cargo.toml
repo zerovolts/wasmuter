@@ -1,9 +1,12 @@
 [package]
-name = "wasm-encoder"
+name = "wasmuter"
 version = "0.1.0"
 authors = ["Zach Stone <zach@zerovolts.com>"]
+license = "MIT"
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+homepage = "https://github.com/zerovolts/wasmuter"
+repository = "https://github.com/zerovolts/wasmuter"
+description = "WebAssembly binary encoder"
+readme = "README.md"
+keywords = ["wasm", "webassembly", "bytecode", "encoder"]
+categories = ["wasm", "encoding"]
