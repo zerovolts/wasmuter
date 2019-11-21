@@ -19,14 +19,14 @@ use crate::{
     },
 };
 
-pub mod constants;
-pub mod encoder;
-pub mod expression;
-pub mod function_type;
-pub mod index;
-pub mod limits;
-pub mod module;
-pub mod section;
+mod constants;
+mod encoder;
+mod expression;
+mod function_type;
+mod index;
+mod limits;
+mod module;
+mod section;
 
 fn main() -> io::Result<()> {
     let wasm_module = hello_world_example();
